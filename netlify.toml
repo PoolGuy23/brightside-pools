@@ -1,0 +1,14 @@
+# Brightside Pools: public site in /site, private job list at /jobs, server functions in /netlify/functions.
+[build]
+  publish = "site"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Keep the job list out of search engines.
+[[headers]]
+  for = "/jobs/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"

@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Brightside Job List</title>
+<style>
+:root{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}
+
+/* Layout: one working column — booked-out summary, add-job panel, the packed 12-hour-day schedule, the job list, then editable time values */
+:root{
+  --bg:#ffffff;
+  --band:#f5f6f7;
+  --fg:#1d1d1f;
+  --muted:#6e6e73;
+  --line:#d9dce0;
+  --accent:#0a74c2;
+  --accent-ink:#ffffff;
+  --fill:#7fc4ec;
+  --full:#0a74c2;
+  --warn:#b25e00;
+  --bad:#c62828;
+  --ok:#1f7a3f;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#000000;--band:#141518;--fg:#f5f5f7;--muted:#a1a1a6;--line:#2c2e33;
+  --accent:#3aa6ef;--accent-ink:#00121f;--fill:#1f5f8f;--full:#3aa6ef;--warn:#f0a040;--bad:#ff6b6b;--ok:#5fd28a;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000;--band:#141518;--fg:#f5f5f7;--muted:#a1a1a6;--line:#2c2e33;
+  --accent:#3aa6ef;--accent-ink:#00121f;--fill:#1f5f8f;--full:#3aa6ef;--warn:#f0a040;--bad:#ff6b6b;--ok:#5fd28a;color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+h1,h2,h3{margin:0;letter-spacing:-.02em;text-wrap:balance}
+p{margin:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+button{font:inherit;cursor:pointer}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+header.top h1{font-size:clamp(26px,4vw,34px);font-weight:700}
+.status{font-size:13px;color:var(--muted)}
+.status.warn{color:var(--warn)}
+
+/* summary */
+.summary{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:12px;margin-top:20px}
+.stat{background:var(--band);border-radius:18px;padding:18px 20px;min-width:0}
+.stat .k{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.stat .v{display:block;margin-top:6px;font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:15px;font-weight:600;letter-spacing:0;margin-left:4px}
+.stat .s{margin-top:4px;font-size:13px;color:var(--muted)}
+.stat.hero{background:var(--accent);color:var(--accent-ink)}
+.stat.hero .k,.stat.hero .s{color:inherit;opacity:.85}
+.stat.hero .v{font-size:40px}
+@media (max-width:820px){.summary{grid-template-columns:1fr 1fr}.stat.hero{grid-column:1/-1}}
+
+/* panels */
+.panel{margin-top:20px;border:1.5px solid var(--line);border-radius:20px;padding:22px}
+.panel h2{font-size:20px}
+.phead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:16px}
+.grid .w2{grid-column:span 2}
+.grid .w4{grid-column:1/-1}
+@media (max-width:820px){.grid{grid-template-columns:1fr 1fr}.grid .w2{grid-column:1/-1}}
+@media (max-width:460px){.grid{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:6px;min-width:0}
+label.f > span{font-size:13px;font-weight:600}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.bad{border-color:var(--bad)!important}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{border:1.5px solid var(--line);background:var(--bg);color:var(--fg);border-radius:980px;padding:4px 11px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 18px;border-radius:980px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:var(--band);color:var(--fg)}
+.btn.small{min-height:32px;padding:0 12px;font-size:13px}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font-weight:500}
+.linkbtn.danger{color:var(--bad)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.err{color:var(--bad);font-size:14px}
+details.paste{margin-top:14px;background:var(--band);border-radius:14px;padding:12px 16px}
+details.paste summary{cursor:pointer;font-weight:600}
+details.paste textarea{margin-top:10px;font-size:13px}
+.seg{display:inline-flex;gap:3px;padding:3px;background:var(--band);border-radius:10px}
+.seg button{border:0;background:none;padding:7px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--bg);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.settings{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;margin-top:14px}
+.settings label.f{width:auto}
+.hint{margin-top:8px;font-size:13px;color:var(--muted);max-width:70ch}
+
+/* schedule */
+.weeks{display:grid;gap:18px;margin-top:16px}
+.week h3{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+@media (max-width:900px){.days{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:560px){.days{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.day{background:var(--band);border-radius:14px;padding:10px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.day .dh{display:flex;justify-content:space-between;gap:6px;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.day .dh span:last-child{color:var(--muted);font-weight:500}
+.bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--fill)}
+.bar i.full{background:var(--full)}
+.dj{font-size:12px;line-height:1.3;padding:6px 8px;border-radius:8px;background:var(--bg);border-left:3px solid var(--accent);overflow-wrap:anywhere}
+.dj b{font-weight:600}
+.dj .fr{float:right;margin-left:6px;color:var(--muted);font-variant-numeric:tabular-nums}
+.day.empty{opacity:.5}
+
+/* table */
+.tablewrap{overflow-x:auto;margin-top:14px;border-radius:14px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
+th{text-align:left;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 12px;background:var(--band);white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td .sub{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+td input.frac{width:76px;padding:5px 8px;text-align:right}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:980px;background:var(--band);white-space:nowrap}
+.pill.ex{background:color-mix(in srgb,var(--warn) 18%,var(--bg));color:var(--warn)}
+.pill.wk{background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent)}
+.rowact{display:flex;gap:12px;white-space:nowrap}
+.confirm{display:inline-flex;gap:10px;align-items:center;font-size:13px}
+.empty-state{padding:28px;text-align:center;color:var(--muted)}
+.empty-state b{display:block;color:var(--fg);font-size:17px;margin-bottom:4px}
+.syncact{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+#syncStatus{color:var(--muted)}
+#syncStatus.ok{color:var(--ok)}
+#syncStatus.warn{color:var(--warn)}
+.synclog{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;font-size:14px}
+.synclog li{padding:8px 12px;border-radius:10px;background:var(--band)}
+.synclog li b{font-weight:600}
+.pill.web{background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent)}
+.banner{margin-top:16px;padding:12px 16px;border-radius:12px;background:color-mix(in srgb,var(--warn) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--warn) 40%,var(--line));font-size:14px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+
+[hidden]{display:none!important}
+.chk{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:980px;padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer}
+.chk:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))}
+.chk input{width:auto;margin:0;accent-color:var(--accent)}
+.est{background:var(--band);border-radius:12px;padding:12px 14px;font-size:14px}
+.dload{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:-2px}
+.dload.long{color:var(--warn);font-weight:600}
+.dj.near{border-left-color:var(--ok)}
+.dj .zip{font-size:11px;color:var(--muted)}
+.settings select{width:auto}
+.timesgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px;align-items:start}
+@media (max-width:900px){.timesgrid{grid-template-columns:1fr}}
+.tbox{background:var(--band);border-radius:16px;padding:16px;min-width:0}
+.tbox h3{font-size:15px;margin-bottom:8px}
+table.ttable{min-width:0;font-size:13px}
+.ttable th,.ttable td{padding:6px 4px;background:none}
+.ttable input{width:62px;padding:4px 6px;text-align:right}
+details > summary.phead{list-style:none}
+details > summary.phead::-webkit-details-marker{display:none}
+
+.login{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-left,0px))}
+.loginbox{width:100%;max-width:360px;border:1.5px solid var(--line);border-radius:20px;padding:28px}
+.loginbox .err{margin-top:12px}
+</style>
+<script>
+// Storage for this page: the site's own private API (/api/admin/jobs), behind a password.
+// It offers the same small interface the job list code uses (collection, doc, onSnapshot, set, update, delete).
+(function(){
+  const API = "/api/admin/jobs", KEY = "bsp_admin_token";
+  const getTok = () => { try { return localStorage.getItem(KEY) || ""; } catch (e) { return ""; } };
+  const setTok = t => { try { t ? localStorage.setItem(KEY, t) : localStorage.removeItem(KEY); } catch (e) {} };
+  const jobSubs = [], setSubs = [];
+  let inflight = null;
+  function showLogin(msg){ document.getElementById("login").hidden = false; const e = document.getElementById("loginErr"); e.hidden = !msg; e.textContent = msg || ""; setTimeout(() => document.getElementById("loginPass").focus(), 50); }
+  async function call(method, query, body){
+    const r = await fetch(API + (query || ""), {method, headers: {"authorization": "Bearer " + getTok(), "content-type": "application/json"}, body: body === undefined ? undefined : JSON.stringify(body), cache: "no-store"});
+    if (r.status === 401) { showLogin(); throw Object.assign(new Error("Please sign in."), {code: "permission_denied"}); }
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || ("Error " + r.status));
+    return d;
+  }
+  function refresh(){
+    if (!getTok()) { showLogin(); return Promise.resolve(); }
+    if (inflight) return inflight;
+    inflight = call("GET").then(d => {
+      const docs = (d.jobs || []).map(j => ({id: j.id, exists: true, data: () => j.data}));
+      jobSubs.forEach(s => s.cb({fromCache: false, docs}));
+      setSubs.forEach(s => s.cb({exists: !!d.settings, data: () => d.settings}));
+    }).catch(e => { jobSubs.forEach(s => s.err && e.code !== "permission_denied" && s.err(e)); })
+      .finally(() => { inflight = null; });
+    return inflight;
+  }
+  const after = p => p.then(r => { refresh(); return r; });
+  const db = {
+    collection: () => ({
+      onSnapshot(cb, err){ jobSubs.push({cb, err}); refresh(); return () => {}; },
+      doc: id => ({
+        update: patch => after(call("PATCH", "?id=" + encodeURIComponent(id), patch)),
+        set: data => after(call("PUT", "?id=" + encodeURIComponent(id), data)),
+        delete: () => after(call("DELETE", "?id=" + encodeURIComponent(id)))
+      }),
+      add: data => after(call("POST", "", data))
+    }),
+    doc: path => path === "settings/main" ? {
+      onSnapshot(cb){ setSubs.push({cb}); return () => {}; },
+      set: data => after(call("PUT", "?settings", data))
+    } : { onSnapshot(){ return () => {}; }, set: () => Promise.resolve() }
+  };
+  window.claude = { use: async name => name === "db" ? db : null };
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("loginForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const r = await fetch("/api/admin/login", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({password: document.getElementById("loginPass").value})});
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { showLogin(d.error || "Couldn't sign in. Try again."); return; }
+      setTok(d.token); document.getElementById("loginPass").value = ""; document.getElementById("login").hidden = true; refresh();
+    });
+    document.getElementById("signOut").addEventListener("click", () => { setTok(""); showLogin(); });
+  });
+  // New paid bookings show up within a minute while this page is open.
+  setInterval(() => { if (document.visibilityState === "visible" && getTok()) refresh(); }, 60000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && getTok()) refresh(); });
+})();
+</script>
+</head>
+<body>
+<div class="login" id="login" hidden>
+  <form class="loginbox" id="loginForm">
+    <p class="muted small" style="font-weight:600;letter-spacing:.04em;text-transform:uppercase">Brightside Pools · Private</p>
+    <h1 style="font-size:28px;margin-top:6px">Job List</h1>
+    <label class="f" style="margin-top:18px"><span>Password</span><input id="loginPass" type="password" autocomplete="current-password" required></label>
+    <button class="btn" type="submit" style="margin-top:16px;width:100%">Sign in</button>
+    <p class="err" id="loginErr" role="alert" hidden></p>
+  </form>
+</div>
+
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="muted small" style="font-weight:600;letter-spacing:.04em;text-transform:uppercase">Brightside Pools · Private · <a href="/">Website</a></p>
+      <h1>Job List</h1>
+    </div>
+    <div style="display:flex;gap:14px;align-items:center"><p class="status" id="status" role="status">Connecting to your saved jobs…</p><button type="button" class="linkbtn" id="signOut">Sign out</button></div>
+  </header>
+
+  <div class="summary" aria-label="Booking summary">
+    <div class="stat hero"><span class="k">Booked out</span><span class="v" id="sWeeks">—</span><span class="s" id="sDays">Add jobs to see how far out you are.</span></div>
+    <div class="stat"><span class="k">Jobs waiting</span><span class="v" id="sJobs">0</span><span class="s" id="sJobsSub">in the order deposits came in</span></div>
+    <div class="stat"><span class="k">Total work</span><span class="v" id="sWork">0<small>hours</small></span><span class="s" id="sWorkSub">12-hour work days</span></div>
+    <div class="stat"><span class="k">Last job day</span><span class="v" id="sLast" style="font-size:22px">—</span><span class="s" id="sLastSub">7-day work week</span></div>
+  </div>
+
+  <div id="exBanner" class="banner" hidden><span><b>These are example jobs</b> so you can see how the list works. Clear them before adding your real jobs.</span><span id="exClearWrap"></span></div>
+  <div id="needBanner" class="banner" hidden></div>
+
+  <!-- Add job -->
+  <section class="panel" aria-labelledby="addHead">
+    <div class="phead"><h2 id="addHead">Add a paid job</h2><span class="muted small">Paid website bookings appear automatically. Add phone or in-person bookings here.</span></div>
+    <details class="paste">
+      <summary>Paste the customer's details</summary>
+      <p class="hint">Website bookings are added automatically once the deposit is paid. Use this for phone bookings: paste a booking email or what the customer sent from "Copy my details," then press Fill in.</p>
+      <textarea id="pasteBox" rows="5" placeholder="Brightside Pools reservation BSP-261108-AB12&#10;&#10;Job: Oval pool installation&#10;Pool: Oval 15'x30'&#10;Deck: 6'x9' deck&#10;Add-ons: Center drain&#10;Name: …&#10;Address: 12 Elm St, Warren 48088"></textarea>
+      <div class="actions" style="margin-top:10px"><button class="btn small" type="button" id="pasteFill">Fill in</button><span class="muted small" id="pasteMsg" role="status"></span></div>
+    </details>
+    <form id="jobForm" novalidate>
+      <div class="grid">
+        <label class="f w2"><span>Customer name</span><input id="fName" autocomplete="off" required></label>
+        <label class="f"><span>Phone</span><input id="fPhone" type="tel" autocomplete="off"></label>
+        <label class="f"><span>Deposit received</span><input id="fReceived" type="datetime-local" required></label>
+        <label class="f w2"><span>Address</span><input id="fAddress" autocomplete="off" placeholder="12 Elm St, Warren"></label>
+        <label class="f"><span>ZIP code</span><input id="fZip" inputmode="numeric" maxlength="5" placeholder="48088" required></label>
+        <label class="f"><span>Booking number</span><input id="fBooking" autocomplete="off" placeholder="BSP-…"></label>
+        <label class="f"><span>Job</span>
+          <select id="fJob">
+            <option>Round pool installation</option><option>Oval pool installation</option><option>Liner replacement</option><option>Pool opening</option><option>Pool closing</option><option>Other</option>
+          </select>
+        </label>
+        <label class="f" id="fShapeWrap" hidden><span>Pool shape</span><select id="fShape"><option>Round</option><option>Oval</option></select></label>
+        <label class="f"><span>Pool size</span><select id="fSize"></select></label>
+        <label class="f"><span>Deck</span><select id="fDeck"></select></label>
+        <label class="f" id="fTearWrap"><span>Tear down existing pool</span><select id="fTear"><option value="">No tear-down</option><option value="Round">Round pool</option><option value="Oval">Oval pool</option></select></label>
+        <label class="f" id="fTearSizeWrap" hidden><span>Old pool size</span><select id="fTearSize"></select></label>
+        <div class="f w4" style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:13px;font-weight:600">Add-ons</span>
+          <div class="chips" id="fAddons">
+            <label class="chk"><input type="checkbox" value="Center drain"> Center (main) drain</label>
+            <label class="chk"><input type="checkbox" value="Heater"> Heater</label>
+            <label class="chk"><input type="checkbox" value="Light"> Light</label>
+            <label class="chk"><input type="checkbox" value="Sanitizer system"> Sanitizer system</label>
+            <label class="chk"><input type="checkbox" value="Wall foam"> Wall foam</label>
+          </div>
+        </div>
+        <div class="f w4 est" id="fEstimate" role="status"></div>
+        <label class="f"><span>Hours (optional)</span><input id="fHours" type="number" min="0.5" max="60" step="0.5" inputmode="decimal" placeholder="Use estimate"></label>
+        <label class="f" style="grid-column:span 3"><span>Notes</span><input id="fNotes" placeholder="Existing pool, deck notes, anything to remember"></label>
+      </div>
+      <div class="actions"><button class="btn" type="submit" id="addBtn">Add to list</button><span class="err" id="formErr" role="alert" hidden></span></div>
+    </form>
+  </section>
+
+  <!-- Schedule -->
+  <section class="panel" aria-labelledby="schedHead">
+    <div class="phead"><h2 id="schedHead">Schedule</h2><span class="muted small" id="schedSub"></span></div>
+    <div class="settings">
+      <label class="f"><span>First work day</span><input id="startDate" type="date"></label>
+      <label class="f"><span>Work day length</span><select id="dayHours"><option value="8">8 hours</option><option value="10">10 hours</option><option value="12">12 hours</option><option value="14">14 hours</option></select></label>
+      <label class="f"><span>A job can move up</span><select id="maxJump"><option value="0">0 spots (strict order)</option><option value="1">1 spot</option><option value="2">2 spots</option><option value="3">3 spots</option><option value="5">5 spots</option><option value="10">10 spots</option></select></label>
+      <label class="f"><span>Max drive between jobs on the same day</span><select id="maxDrive"><option value="20">20 minutes</option><option value="30">30 minutes</option><option value="40">40 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label>
+    </div>
+    <p class="hint" id="ruleHint"></p>
+    <div class="weeks" id="weeks"></div>
+  </section>
+
+  <!-- Queue -->
+  <section class="panel" aria-labelledby="queueHead">
+    <div class="phead"><h2 id="queueHead">Job list</h2><span class="muted small">Sorted by when the deposit came in. Type in the Hours box to change a job's time.</span></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th class="num">#</th><th>Deposit received</th><th>Customer</th><th>Job</th><th>ZIP</th><th class="num">Hours</th><th>Scheduled</th><th>Time frame</th><th></th></tr></thead>
+        <tbody id="queueBody"></tbody>
+      </table>
+    </div>
+    <details style="margin-top:16px">
+      <summary style="cursor:pointer;font-weight:600">Completed jobs (<span id="doneCount">0</span>)</summary>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Deposit received</th><th>Customer</th><th>Job</th><th class="num">Hours</th><th>Completed</th><th></th></tr></thead>
+          <tbody id="doneBody"></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- Time values -->
+  <section class="panel" aria-labelledby="timesHead">
+    <details id="timesWrap">
+      <summary class="phead" style="cursor:pointer"><h2 id="timesHead" style="display:inline">Time values</h2> <span class="muted small">How many hours each part of a job takes. Change any value and the schedule updates.</span></summary>
+      <div class="timesgrid" id="timesGrid"></div>
+    </details>
+  </section>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const EPS = 1e-6;
+  const ROUND = ["15'","16'","18'","21'","24'","27'","28'","30'","33'"];
+  const OVAL = ["12'x17'","12'x18'","12'x20'","12'x24'","15'x24'","15'x26'","15'x30'","16'x28'","16'x32'","18'x33'","18'x40'"];
+  const OUR_DECKS = ["6'x9' deck","6'x14' deck","5.5'x13' deck"];
+  const INSTALL_JOBS = ["Round pool installation","Oval pool installation"];
+
+  // Owner-provided time values (hours). Blank = not set yet; the owner can fill these in under "Time values".
+  const DEFAULT_TIMES = {
+    "install|Round 15'":4, "install|Round 16'":4, "install|Round 18'":4, "install|Round 21'":5,
+    "install|Round 24'":6, "install|Round 27'":6, "install|Round 28'":6, "install|Round 30'":8, "install|Round 33'":8,
+    "install|Oval 12'x17'":6, "install|Oval 12'x18'":6, "install|Oval 12'x20'":6, "install|Oval 12'x24'":6,
+    "install|Oval 15'x24'":8, "install|Oval 15'x26'":8, "install|Oval 15'x30'":8, "install|Oval 16'x32'":8,
+    "install|Oval 18'x33'":12, "install|Oval 18'x40'":12,
+    "liner|Round 15'":3, "liner|Round 16'":3, "liner|Round 18'":3, "liner|Round 21'":3, "liner|Round 24'":3,
+    "liner|Round 27'":4, "liner|Round 28'":4, "liner|Round 30'":4, "liner|Round 33'":4,
+    "liner|Oval 12'x17'":3, "liner|Oval 12'x18'":3, "liner|Oval 12'x20'":3, "liner|Oval 12'x24'":3, "liner|Oval 15'x24'":3,
+    "liner|Oval 15'x26'":4, "liner|Oval 15'x30'":4, "liner|Oval 16'x28'":4, "liner|Oval 16'x32'":4, "liner|Oval 18'x33'":4, "liner|Oval 18'x40'":4,
+    "install|Oval 16'x28'":8,
+    "teardown|Round 15'":1, "teardown|Round 16'":1, "teardown|Round 18'":1, "teardown|Round 21'":1, "teardown|Round 24'":1,
+    "teardown|Round 27'":1.5, "teardown|Round 28'":1.5, "teardown|Round 30'":1.5, "teardown|Round 33'":1.5,
+    "teardown|Oval 12'x17'":2, "teardown|Oval 12'x18'":2, "teardown|Oval 12'x20'":2, "teardown|Oval 12'x24'":2,
+    "teardown|Oval 15'x24'":3.5, "teardown|Oval 15'x26'":3.5, "teardown|Oval 15'x30'":3.5, "teardown|Oval 16'x28'":3.5, "teardown|Oval 16'x32'":3.5, "teardown|Oval 18'x33'":3.5, "teardown|Oval 18'x40'":3.5,
+    "deck":4, "deckMatch":1, "drain":0.5, "opening":1, "closing":1
+  };
+  const EXTRA_KEYS = [["deck","One of our decks (6′×9′, 6′×14′, 5.5′×13′)"],["deckMatch","Matching up to an existing deck"],["drain","Center (main) drain"],["opening","Pool opening"],["closing","Pool closing"]];
+
+  let jobs = [];
+  let settings = {startDate:"", dayHours:12, maxJump:5, maxDrive:40, times:{}};
+  let db = null, jobsCol = null, settingsDoc = null, loaded = false, pendingDelete = null;
+
+  // ---------- helpers ----------
+  function el(tag, attrs, ...kids){
+    const n = document.createElement(tag);
+    if (attrs) for (const [k,v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v === true ? "" : v);
+    }
+    kids.flat().forEach(c => { if (c != null && c !== false) n.append(c.nodeType ? c : document.createTextNode(c)); });
+    return n;
+  }
+  const r1 = n => Math.round(n*10)/10;
+  const hrs = n => r1(n) + " h";
+  const pretty = s => String(s||"").replace(/'/g,"′").replace(/x/g,"×");
+  function todayISO(){ const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+  function nowLocal(){ const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+  function dateFor(i){ const d = new Date((settings.startDate || todayISO()) + "T12:00:00"); d.setDate(d.getDate() + i); return d; }
+  const fmtDay = d => d.toLocaleDateString("en-US",{weekday:"short", month:"short", day:"numeric"});
+  const fmtRecv = s => { if (!s) return "—"; const d = new Date(s); return isNaN(d) ? s : d.toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}); };
+  function setStatus(t, warn){ $("status").textContent = t; $("status").classList.toggle("warn", !!warn); }
+  const T = key => { const o = settings.times && settings.times[key]; return (o != null && o !== "") ? Number(o) : DEFAULT_TIMES[key]; };
+  function shortJob(s){ return ({"Round pool installation":"Round install","Oval pool installation":"Oval install","Liner replacement":"Liner","Pool opening":"Opening","Pool closing":"Closing"})[s] || s || "Job"; }
+
+  // Normalize older saved jobs (size like "Oval 15'x30'", "fraction" of a day).
+  function norm(j){
+    let shape = j.shape, size = j.size || "";
+    const m = /^(Round|Oval)\s+(.+)$/.exec(size); if (m) { shape = shape || m[1]; size = m[2]; }
+    if (!shape) shape = j.job === "Oval pool installation" ? "Oval" : "Round";
+    if (j.job === "Round pool installation") shape = "Round";
+    if (j.job === "Oval pool installation") shape = "Oval";
+    const ov = j.hoursOverride != null && j.hoursOverride !== "" ? Number(j.hoursOverride)
+             : (j.fraction != null && j.hours == null ? Number(j.fraction) * 12 : null);
+    return Object.assign({}, j, {shape, size, addons: j.addons || [], zip: j.zip || ((String(j.where||j.address||"").match(/\b(\d{5})\b/)||[])[1] || ""), override: ov});
+  }
+
+  // ---------- time estimate ----------
+  function estimate(j){
+    const parts = [], missing = [];
+    const key = j.shape + " " + j.size;
+    if (INSTALL_JOBS.includes(j.job)) {
+      const h = T("install|" + key); if (h > 0) parts.push([pretty(key) + " install", h]); else missing.push(pretty(key) + " install time");
+      if (OUR_DECKS.includes(j.deck)) parts.push([pretty(j.deck), T("deck")]);
+      if (j.teardownShape && j.teardownSize) { const ht = T("teardown|" + j.teardownShape + " " + j.teardownSize); if (ht > 0) parts.push(["Tear down old " + pretty(j.teardownShape + " " + j.teardownSize), ht]); else missing.push("tear-down time"); }
+      if (j.deck === "Match up to existing deck") { const h2 = T("deckMatch"); if (h2 > 0) parts.push(["Match to existing deck", h2]); else missing.push("existing-deck match time"); }
+    } else if (j.job === "Liner replacement") {
+      const h = T("liner|" + key); if (h > 0) parts.push([pretty(key) + " liner", h]); else missing.push(pretty(key) + " liner time");
+    } else if (j.job === "Pool opening" || j.job === "Pool closing") {
+      const k = j.job === "Pool opening" ? "opening" : "closing", h = T(k);
+      if (h > 0) parts.push([j.job, h]); else missing.push(j.job.toLowerCase() + " time");
+    } else missing.push("hours for this job");
+    if ((j.addons||[]).includes("Center drain")) parts.push(["Center drain", T("drain")]);
+    const sum = parts.reduce((a,p) => a + (Number(p[1])||0), 0);
+    const baseMissing = missing.length && !parts.some(p => /install|liner|opening|closing/i.test(p[0]));
+    return {parts, missing, auto: baseMissing ? null : sum};
+  }
+  function hoursOf(j){ const e = estimate(j); return j.override > 0 ? j.override : e.auto; }
+  // Pool installation time alone (without deck or drain), or null if this isn't an installation.
+  // Pool installation time alone. If this fits in one work day, a deck, drain, or tear-down on top of it
+  // never pushes the job onto a second day.
+  function baseInstall(j){
+    if (!INSTALL_JOBS.includes(j.job)) return null;
+    const b = T("install|" + j.shape + " " + j.size); return b > 0 ? b : null;
+  }
+
+  // ---------- ZIP closeness ----------
+  // 0 = same ZIP, 1 = ZIPs share the first 4 digits, 2 = share the first 3 (same postal area), 3 = farther or unknown.
+  // ZIP code centers for Michigan ZIPs 480xx–484xx: [latitude, longitude, city].
+  const ZIPS = {"48001":[42.6367,-82.5866,"Algonac"],"48002":[42.9388,-82.9198,"Allenton"],"48003":[42.926,-83.0362,"Almont"],"48004":[42.8241,-82.6652,"Anchorville"],"48005":[42.8409,-82.8899,"Armada"],"48006":[43.0752,-82.6955,"Avoca"],"48007":[42.6061,-83.2976,"Troy"],"48009":[42.5444,-83.2133,"Birmingham"],"48012":[42.5467,-83.2113,"Birmingham"],"48014":[43.0263,-82.9298,"Capac"],"48015":[42.4788,-83.0248,"Center Line"],"48017":[42.5365,-83.1503,"Clawson"],"48021":[42.4658,-82.9459,"Eastpointe"],"48022":[42.9872,-82.7854,"Emmett"],"48023":[42.7023,-82.6688,"Fair Haven"],"48025":[42.5219,-83.2519,"Franklin"],"48026":[42.5423,-82.947,"Fraser"],"48027":[42.9443,-82.6916,"Goodells"],"48028":[42.585,-82.586,"Harsens Island"],"48030":[42.4608,-83.0982,"Hazel Park"],"48032":[43.1223,-82.5998,"Jeddo"],"48033":[42.4723,-83.294,"Southfield"],"48034":[42.4969,-83.2911,"Southfield"],"48035":[42.5512,-82.9167,"Clinton Township"],"48036":[42.5938,-82.9133,"Clinton Township"],"48037":[42.5675,-83.15,"Southfield"],"48038":[42.6206,-82.9608,"Clinton Township"],"48039":[42.6859,-82.5499,"Marine City"],"48040":[42.9135,-82.4813,"Marysville"],"48041":[42.941,-82.8046,"Memphis"],"48042":[42.6735,-82.9163,"Macomb"],"48043":[42.5978,-82.8823,"Mount Clemens"],"48044":[42.6442,-82.8985,"Macomb"],"48045":[42.5877,-82.8215,"Harrison Township"],"48046":[42.5973,-82.878,"Mount Clemens"],"48047":[42.673,-82.7753,"New Baltimore"],"48048":[42.7443,-82.8042,"New Haven"],"48049":[43.0349,-82.5748,"North Street"],"48050":[42.7859,-82.7979,"New Haven"],"48051":[42.6938,-82.8207,"New Baltimore"],"48054":[42.7769,-82.5437,"East China"],"48059":[43.0888,-82.4905,"Fort Gratiot"],"48060":[42.9958,-82.4599,"Port Huron"],"48061":[42.9709,-82.4249,"Port Huron"],"48062":[42.8389,-82.7996,"Richmond"],"48063":[42.8892,-82.6675,"Columbus"],"48064":[42.7674,-82.6728,"Casco"],"48065":[42.84,-83.0388,"Romeo"],"48066":[42.5034,-82.9387,"Roseville"],"48067":[42.4906,-83.1366,"Royal Oak"],"48068":[42.4895,-83.1446,"Royal Oak"],"48069":[42.471,-83.1438,"Pleasant Ridge"],"48070":[42.4825,-83.1749,"Huntington Woods"],"48071":[42.5016,-83.1027,"Madison Heights"],"48072":[42.5028,-83.1887,"Berkley"],"48073":[42.519,-83.157,"Royal Oak"],"48074":[42.9051,-82.5679,"Smiths Creek"],"48075":[42.4638,-83.2255,"Southfield"],"48076":[42.4981,-83.2058,"Southfield"],"48079":[42.8255,-82.5133,"Saint Clair"],"48080":[42.4706,-82.9022,"Saint Clair Shores"],"48081":[42.4941,-82.899,"Saint Clair Shores"],"48082":[42.5269,-82.8841,"Saint Clair Shores"],"48083":[42.5597,-83.1138,"Troy"],"48084":[42.5627,-83.1799,"Troy"],"48085":[42.6006,-83.1198,"Troy"],"48086":[42.4734,-83.2219,"Southfield"],"48088":[42.5164,-82.9832,"Warren"],"48089":[42.4685,-82.9974,"Warren"],"48090":[42.4775,-83.0277,"Warren"],"48091":[42.4665,-83.0593,"Warren"],"48092":[42.5125,-83.0643,"Warren"],"48093":[42.5149,-82.9968,"Warren"],"48094":[42.7262,-83.0268,"Washington"],"48095":[42.7682,-83.0395,"Washington"],"48096":[42.754,-82.9163,"Ray"],"48097":[43.126,-82.8295,"Yale"],"48098":[42.5991,-83.1789,"Troy"],"48099":[42.5876,-83.1737,"Troy"],"48101":[42.2522,-83.212,"Allen Park"],"48103":[42.2794,-83.784,"Ann Arbor"],"48104":[42.2694,-83.7282,"Ann Arbor"],"48105":[42.3042,-83.7068,"Ann Arbor"],"48106":[42.2535,-83.8366,"Ann Arbor"],"48107":[42.2535,-83.8366,"Ann Arbor"],"48108":[42.2328,-83.7015,"Ann Arbor"],"48109":[42.2776,-83.7409,"Ann Arbor"],"48110":[42.0082,-83.6643,"Azalia"],"48111":[42.1949,-83.4854,"Belleville"],"48112":[42.2048,-83.4852,"Belleville"],"48113":[42.2535,-83.8366,"Ann Arbor"],"48114":[42.57,-83.7484,"Brighton"],"48115":[42.1602,-83.9117,"Bridgewater"],"48116":[42.5371,-83.7756,"Brighton"],"48117":[42.0529,-83.3755,"Carleton"],"48118":[42.3207,-84.0334,"Chelsea"],"48120":[42.3223,-83.1763,"Dearborn"],"48121":[42.2399,-83.1508,"Dearborn"],"48122":[42.2812,-83.1826,"Melvindale"],"48123":[42.2399,-83.1508,"Dearborn"],"48124":[42.2941,-83.2536,"Dearborn"],"48125":[42.2768,-83.2606,"Dearborn Heights"],"48126":[42.3349,-83.1801,"Dearborn"],"48127":[42.3353,-83.2864,"Dearborn Heights"],"48128":[42.32,-83.2701,"Dearborn"],"48130":[42.3583,-83.9,"Dexter"],"48131":[41.9514,-83.6522,"Dundee"],"48133":[41.7829,-83.4958,"Erie"],"48134":[42.1055,-83.2795,"Flat Rock"],"48135":[42.3242,-83.3402,"Garden City"],"48136":[42.2399,-83.1508,"Garden City"],"48137":[42.496,-84.0847,"Gregory"],"48138":[42.1352,-83.1561,"Grosse Ile"],"48139":[42.4523,-83.8147,"Hamburg"],"48140":[41.8549,-83.5916,"Ida"],"48141":[42.294,-83.3146,"Inkster"],"48143":[42.4573,-83.8366,"Lakeland"],"48144":[41.7531,-83.6259,"Lambertville"],"48145":[41.8585,-83.4715,"La Salle"],"48146":[42.2422,-83.1807,"Lincoln Park"],"48150":[42.3615,-83.3649,"Livonia"],"48151":[42.3684,-83.3527,"Livonia"],"48152":[42.4258,-83.3636,"Livonia"],"48153":[42.3684,-83.3527,"Livonia"],"48154":[42.3958,-83.3772,"Livonia"],"48157":[41.8146,-83.4382,"Luna Pier"],"48158":[42.1555,-84.0332,"Manchester"],"48159":[42.0288,-83.5179,"Maybee"],"48160":[42.0914,-83.6776,"Milan"],"48161":[41.908,-83.4719,"Monroe"],"48162":[41.9293,-83.4448,"Monroe"],"48164":[42.1449,-83.3589,"New Boston"],"48165":[42.5076,-83.6342,"New Hudson"],"48166":[41.9766,-83.2804,"Newport"],"48167":[42.4262,-83.4794,"Northville"],"48168":[42.4086,-83.4978,"Northville"],"48169":[42.4596,-83.9099,"Pinckney"],"48170":[42.3688,-83.4799,"Plymouth"],"48173":[42.0731,-83.2127,"Rockwood"],"48174":[42.2223,-83.3966,"Romulus"],"48175":[42.4056,-83.5781,"Salem"],"48176":[42.1698,-83.7849,"Saline"],"48177":[41.8076,-83.5793,"Samaria"],"48178":[42.4567,-83.659,"South Lyon"],"48179":[42.0624,-83.2663,"South Rockwood"],"48180":[42.2317,-83.2673,"Taylor"],"48182":[41.7682,-83.5797,"Temperance"],"48183":[42.1382,-83.2179,"Trenton"],"48184":[42.2768,-83.3758,"Wayne"],"48185":[42.3358,-83.3846,"Westland"],"48186":[42.289,-83.3686,"Westland"],"48187":[42.332,-83.4695,"Canton"],"48188":[42.291,-83.465,"Canton"],"48189":[42.4289,-83.7828,"Whitmore Lake"],"48190":[42.1244,-83.5946,"Whittaker"],"48191":[42.1292,-83.5687,"Willis"],"48192":[42.2084,-83.1616,"Wyandotte"],"48193":[42.1782,-83.2461,"Riverview"],"48195":[42.2044,-83.1999,"Southgate"],"48197":[42.2325,-83.6336,"Ypsilanti"],"48198":[42.2439,-83.583,"Ypsilanti"],"48201":[42.3474,-83.0604,"Detroit"],"48202":[42.377,-83.0796,"Detroit"],"48203":[42.4212,-83.1009,"Highland Park"],"48204":[42.3661,-83.1422,"Detroit"],"48205":[42.4313,-82.9813,"Detroit"],"48206":[42.3749,-83.1087,"Detroit"],"48207":[42.3524,-83.0271,"Detroit"],"48208":[42.3495,-83.0927,"Detroit"],"48209":[42.3097,-83.1155,"Detroit"],"48210":[42.3376,-83.1303,"Detroit"],"48211":[42.3809,-83.0409,"Detroit"],"48212":[42.4081,-83.0583,"Hamtramck"],"48213":[42.3982,-82.9925,"Detroit"],"48214":[42.3669,-82.9938,"Detroit"],"48215":[42.3773,-82.9513,"Detroit"],"48216":[42.3275,-83.0827,"Detroit"],"48217":[42.2719,-83.1545,"Detroit"],"48218":[42.2692,-83.1364,"River Rouge"],"48219":[42.426,-83.2495,"Detroit"],"48220":[42.4586,-83.1363,"Ferndale"],"48221":[42.426,-83.15,"Detroit"],"48222":[42.2399,-83.1508,"Detroit"],"48223":[42.3945,-83.2454,"Detroit"],"48224":[42.4098,-82.9441,"Detroit"],"48225":[42.4377,-82.9289,"Harper Woods"],"48226":[42.3333,-83.0484,"Detroit"],"48227":[42.3883,-83.1937,"Detroit"],"48228":[42.3547,-83.2168,"Detroit"],"48229":[42.2519,-83.1489,"Ecorse"],"48230":[42.3847,-82.9244,"Grosse Pointe"],"48231":[42.3314,-83.0458,"Detroit"],"48232":[42.3314,-83.0458,"Detroit"],"48233":[42.2399,-83.1508,"Detroit"],"48234":[42.4337,-83.0434,"Detroit"],"48235":[42.4261,-83.1951,"Detroit"],"48236":[42.4274,-82.9002,"Grosse Pointe"],"48237":[42.4662,-83.184,"Oak Park"],"48238":[42.3959,-83.1411,"Detroit"],"48239":[42.3756,-83.2889,"Redford"],"48240":[42.4264,-83.3017,"Redford"],"48242":[42.2166,-83.3532,"Detroit"],"48243":[42.3314,-83.0458,"Detroit"],"48244":[42.2399,-83.1508,"Detroit"],"48255":[42.3314,-83.0458,"Detroit"],"48260":[42.2399,-83.1508,"Detroit"],"48264":[42.3314,-83.0458,"Detroit"],"48265":[42.2399,-83.1508,"Detroit"],"48266":[42.2399,-83.1508,"Detroit"],"48267":[42.3314,-83.0458,"Detroit"],"48268":[42.3314,-83.0458,"Detroit"],"48269":[42.3314,-83.0458,"Detroit"],"48272":[42.3314,-83.0458,"Detroit"],"48275":[42.3314,-83.0458,"Detroit"],"48277":[42.2399,-83.1508,"Detroit"],"48278":[42.2399,-83.1508,"Detroit"],"48279":[42.3314,-83.0458,"Detroit"],"48288":[42.2399,-83.1508,"Detroit"],"48301":[42.5445,-83.2792,"Bloomfield Hills"],"48302":[42.5848,-83.2821,"Bloomfield Hills"],"48303":[42.5836,-83.2455,"Bloomfield Hills"],"48304":[42.587,-83.2359,"Bloomfield Hills"],"48306":[42.7262,-83.1566,"Rochester"],"48307":[42.6593,-83.1225,"Rochester"],"48308":[42.6806,-83.1338,"Rochester"],"48309":[42.6626,-83.1837,"Rochester"],"48310":[42.5648,-83.0701,"Sterling Heights"],"48311":[42.5803,-83.0302,"Sterling Heights"],"48312":[42.5592,-83.0029,"Sterling Heights"],"48313":[42.6005,-82.9998,"Sterling Heights"],"48314":[42.6124,-83.0345,"Sterling Heights"],"48315":[42.671,-82.9988,"Utica"],"48316":[42.6885,-83.0548,"Utica"],"48317":[42.6413,-83.0504,"Utica"],"48318":[42.6261,-83.0335,"Utica"],"48320":[42.6114,-83.3356,"Keego Harbor"],"48321":[42.6601,-83.3863,"Auburn Hills"],"48322":[42.5424,-83.3793,"West Bloomfield"],"48323":[42.5683,-83.3805,"West Bloomfield"],"48324":[42.5961,-83.3819,"West Bloomfield"],"48325":[42.6601,-83.3863,"West Bloomfield"],"48326":[42.6583,-83.2375,"Auburn Hills"],"48327":[42.6438,-83.4076,"Waterford"],"48328":[42.6429,-83.3546,"Waterford"],"48329":[42.6877,-83.3879,"Waterford"],"48330":[42.6754,-83.3637,"Drayton Plains"],"48331":[42.5051,-83.4072,"Farmington"],"48332":[42.4645,-83.3763,"Farmington"],"48333":[42.4645,-83.3763,"Farmington"],"48334":[42.5065,-83.3484,"Farmington"],"48335":[42.4617,-83.4053,"Farmington"],"48336":[42.4656,-83.3638,"Farmington"],"48340":[42.668,-83.2893,"Pontiac"],"48341":[42.6294,-83.3041,"Pontiac"],"48342":[42.6439,-83.2792,"Pontiac"],"48343":[42.6389,-83.291,"Pontiac"],"48346":[42.7239,-83.4232,"Clarkston"],"48347":[42.6601,-83.3863,"Clarkston"],"48348":[42.7605,-83.404,"Clarkston"],"48350":[42.7496,-83.5358,"Davisburg"],"48353":[42.6356,-83.7147,"Hartland"],"48356":[42.6692,-83.5895,"Highland"],"48357":[42.6595,-83.637,"Highland"],"48359":[42.7231,-83.2769,"Lake Orion"],"48360":[42.7429,-83.272,"Lake Orion"],"48361":[42.7845,-83.2397,"Lake Orion"],"48362":[42.7763,-83.2748,"Lake Orion"],"48363":[42.7732,-83.1711,"Oakland"],"48366":[42.8214,-83.1502,"Lakeville"],"48367":[42.8437,-83.1406,"Leonard"],"48370":[42.8265,-83.2005,"Oxford"],"48371":[42.8223,-83.2829,"Oxford"],"48374":[42.4735,-83.5224,"Novi"],"48375":[42.4604,-83.4577,"Novi"],"48376":[42.471,-83.4748,"Novi"],"48377":[42.4992,-83.4773,"Novi"],"48380":[42.602,-83.6508,"Milford"],"48381":[42.5758,-83.5924,"Milford"],"48382":[42.5834,-83.5009,"Commerce Township"],"48383":[42.658,-83.5398,"White Lake"],"48386":[42.641,-83.4738,"White Lake"],"48387":[42.6148,-83.4469,"Union Lake"],"48390":[42.5582,-83.4773,"Walled Lake"],"48391":[42.5378,-83.481,"Walled Lake"],"48393":[42.534,-83.5285,"Wixom"],"48397":[42.4917,-83.0402,"Warren"],"48401":[43.3619,-82.6479,"Applegate"],"48410":[43.5589,-82.9455,"Argyle"],"48411":[42.94,-83.5369,"Atlas"],"48412":[43.0547,-83.1668,"Attica"],"48413":[43.8067,-83.0054,"Bad Axe"],"48414":[42.882,-84.1207,"Bancroft"],"48415":[43.2649,-83.7903,"Birch Run"],"48416":[43.2171,-82.9978,"Brown City"],"48417":[43.2404,-83.9511,"Burt"],"48418":[42.8059,-83.973,"Byron"],"48419":[43.4258,-82.6022,"Carsonville"],"48420":[43.1779,-83.7249,"Clio"],"48421":[43.1503,-83.3811,"Columbiaville"],"48422":[43.2622,-82.6337,"Croswell"],"48423":[43.0348,-83.5268,"Davison"],"48426":[43.4775,-83.0638,"Decker"],"48427":[43.5151,-82.7191,"Deckerville"],"48428":[42.9378,-83.1501,"Dryden"],"48429":[42.9117,-83.9877,"Durand"],"48430":[42.7851,-83.7294,"Fenton"],"48432":[43.9014,-82.9825,"Filion"],"48433":[43.072,-83.8424,"Flushing"],"48434":[43.6632,-82.6133,"Forestville"],"48435":[43.2645,-83.3796,"Fostoria"],"48436":[42.8813,-83.8855,"Gaines"],"48437":[43.1123,-83.6154,"Genesee"],"48438":[42.9147,-83.4845,"Goodrich"],"48439":[42.9282,-83.6264,"Grand Blanc"],"48440":[42.9545,-83.4033,"Hadley"],"48441":[43.8312,-82.6886,"Harbor Beach"],"48442":[42.7905,-83.6127,"Holly"],"48444":[43.0425,-83.0708,"Imlay City"],"48445":[43.948,-82.9755,"Kinde"],"48446":[43.0579,-83.3332,"Lapeer"],"48449":[42.9693,-83.9279,"Lennon"],"48450":[43.2435,-82.5301,"Lexington"],"48451":[42.8104,-83.7993,"Linden"],"48453":[43.3399,-83.0573,"Marlette"],"48454":[43.193,-82.8393,"Melvin"],"48455":[42.9414,-83.2891,"Metamora"],"48456":[43.6814,-82.7299,"Minden City"],"48457":[43.1754,-83.8824,"Montrose"],"48458":[43.116,-83.6895,"Mount Morris"],"48460":[43.1388,-83.9851,"New Lothrop"],"48461":[43.2069,-83.2267,"North Branch"],"48462":[42.8409,-83.4288,"Ortonville"],"48463":[43.1706,-83.5172,"Otisville"],"48464":[43.2183,-83.4242,"Otter Lake"],"48465":[43.6257,-82.7017,"Palms"],"48466":[43.2694,-82.8193,"Peck"],"48467":[44.0223,-82.9984,"Port Austin"],"48468":[43.928,-82.7529,"Port Hope"],"48469":[43.4329,-82.5468,"Port Sanilac"],"48470":[43.7404,-82.7414,"Ruth"],"48471":[43.4055,-82.8409,"Sandusky"],"48472":[43.4886,-82.9301,"Snover"],"48473":[42.9468,-83.817,"Swartz Creek"],"48475":[43.6896,-82.964,"Ubly"],"48476":[42.9406,-84.0328,"Vernon"],"48480":[42.918,-83.617,"Grand Blanc"]};
+  const zipCity = z => (ZIPS[z] || [])[2] || "";
+  // Estimated drive time in minutes between two ZIP code centers (not live traffic):
+  // straight-line miles × 1.25 for roads; first 8 road miles at 30 mph, the rest at 55 mph, plus 3 minutes.
+  function driveMin(a, b){
+    if (!a || !b) return null;
+    if (a === b) return 5;
+    const p = ZIPS[a], q = ZIPS[b]; if (!p || !q) return null;
+    const t = x => x * Math.PI / 180, dl = t(q[0]-p[0]), dn = t(q[1]-p[1]);
+    const h = Math.sin(dl/2)**2 + Math.cos(t(p[0])) * Math.cos(t(q[0])) * Math.sin(dn/2)**2;
+    const road = 2 * 3958.8 * Math.asin(Math.sqrt(h)) * 1.25;
+    return Math.round(3 + (road <= 8 ? road / 30 * 60 : 16 + (road - 8) / 55 * 60));
+  }
+
+  // ---------- scheduling ----------
+  // 1. The next job in line always starts the next open day (deposit order is respected).
+  // 2. Leftover time that day is filled with jobs that fit, choosing the shortest drive first,
+  //    and only from jobs no more than `maxJump` places behind the front of the line.
+  //    No two jobs on the same day may be more than `maxDrive` minutes apart (estimated from ZIP codes).
+  // 3. A job longer than one work day carries into the next day, and that day's leftover time is filled the same way.
+  // 4. Exception: if a pool installation fits in one day on its own and a deck, center drain, or tear-down pushes it
+  //    over, it stays on a single (long) day and nothing else is added to that day.
+  function plan(active){
+    const CAP = Number(settings.dayHours) || 12, J = Math.max(0, Number(settings.maxJump) || 0), MAXD = Number(settings.maxDrive) || 40;
+    const items = active.map((j,i) => { const h = hoursOf(j), b = baseInstall(j); return {j, i, h, oneDay: h > CAP + EPS && b != null && b <= CAP + EPS}; });
+    const need = items.filter(x => !(x.h > 0));
+    const rem = items.filter(x => x.h > 0);
+    const days = [], placed = new Map();
+    while (rem.length) {
+      const a = rem.shift();
+      const start = days.length;
+      if (a.oneDay) { days.push({load: a.h, long: true, entries: [{x: a, part: a.h, n: 1, total: 1, dist: null, lead: true}]}); }
+      else { let left = a.h, n = 1; const total = Math.max(1, Math.ceil(a.h / CAP - EPS));
+        while (left > EPS) { const take = Math.min(CAP, left); days.push({load: take, entries: [{x: a, part: take, n, total, dist: null, lead: n === 1}]}); left -= take; n++; } }
+      placed.set(a.j.id, {start, end: days.length - 1, h: a.h, longDay: !!a.oneDay});
+      const day = days[days.length - 1];
+      for (;;) {
+        const free = CAP - day.load; if (free < 0.25 - EPS) break;
+        let best = null;
+        for (let k = 0; k < rem.length && k <= J; k++) {
+          const c = rem[k]; if (c.h > free + EPS) continue;
+          const mins = day.entries.map(e => driveMin(e.x.j.zip, c.j.zip));
+          if (mins.some(m => m == null)) continue;            // can't estimate the drive, so don't pair it
+          const far = Math.max(...mins); if (far > MAXD) continue;
+          const score = Math.round(far / 5) * 1000 + k;      // shortest drive first; ties go to whoever paid first
+          if (!best || score < best.score) best = {k, c, score, dist: far};
+        }
+        if (!best) break;
+        rem.splice(best.k, 1);
+        day.load += best.c.h;
+        day.entries.push({x: best.c, part: best.c.h, n: 1, total: 1, dist: best.dist});
+        placed.set(best.c.j.id, {start: days.length - 1, end: days.length - 1, h: best.c.h, dist: best.dist});
+      }
+    }
+    // how many earlier deposits a job was scheduled ahead of
+    items.forEach(x => { const p = placed.get(x.j.id); if (!p) return;
+      p.movedUp = items.filter(y => y.i < x.i && placed.get(y.j.id) && placed.get(y.j.id).start > p.start).length; });
+    return {days, placed, need, CAP};
+  }
+
+  // ---------- render ----------
+  function activeJobs(){
+    return jobs.filter(j => j.status !== "done").map(norm)
+      .sort((a,b) => (a.received||"").localeCompare(b.received||"") || (a.created||0) - (b.created||0));
+  }
+  function render(){
+    const act = activeJobs();
+    const {days, placed, need, CAP} = plan(act);
+    const n = days.length;
+    const work = act.reduce((a,j) => a + (hoursOf(j) || 0), 0);
+
+    // summary
+    if (n) {
+      const sw = $("sWeeks"); sw.textContent = ""; sw.append(String(r1(n/7)), el("small",{text: r1(n/7) === 1 ? "week" : "weeks"}));
+      $("sDays").textContent = n + (n === 1 ? " work day" : " work days") + " on a 7-day work week";
+      $("sLast").textContent = fmtDay(dateFor(n-1)); $("sLastSub").textContent = "Day " + n + " · Week " + Math.ceil(n/7);
+    } else {
+      $("sWeeks").textContent = "0"; $("sDays").textContent = loaded ? "No jobs scheduled. Add a paid job below." : "Add jobs to see how far out you are.";
+      $("sLast").textContent = "—"; $("sLastSub").textContent = "7-day work week";
+    }
+    $("sJobs").textContent = act.length;
+    $("sJobsSub").textContent = need.length ? need.length + " need hours before they can be scheduled" : "in the order deposits came in";
+    const sw2 = $("sWork"); sw2.textContent = ""; sw2.append(String(r1(work)), el("small",{text:"hours"}));
+    $("sWorkSub").textContent = CAP + "-hour work days";
+    $("exBanner").hidden = !jobs.some(j => j.example);
+    if ($("exClearWrap").childElementCount === 0) resetEx();
+    const unknownZip = act.filter(j => !ZIPS[j.zip]);
+    const nb = $("needBanner"); nb.hidden = !need.length && !unknownZip.length; nb.textContent = "";
+    if (unknownZip.length) nb.append(el("span",null, el("b",{text:"Drive time unknown: "}), unknownZip.map(j => (j.name || "Job") + " (" + (j.zip || "no ZIP") + ")").join(", ") + ". These jobs get a day to themselves unless another job has the same ZIP. Check the ZIP code."), need.length ? el("br") : null);
+    if (need.length) nb.append(el("span",null, el("b",{text: need.length + (need.length === 1 ? " job isn't" : " jobs aren't") + " on the schedule yet."}), " " + need.map(x => (x.j.name || "Job") + " (" + estimate(x.j).missing.join(", ") + ")").join("; ") + ". Type hours for " + (need.length === 1 ? "it" : "them") + " in the job list, or fill in the missing value under Time values."));
+
+    // settings controls
+    if (document.activeElement !== $("startDate")) $("startDate").value = settings.startDate || todayISO();
+    $("dayHours").value = String(settings.dayHours || 12);
+    $("maxJump").value = String(settings.maxJump);
+    $("maxDrive").value = String(settings.maxDrive || 40);
+    const J = Number(settings.maxJump) || 0;
+    $("ruleHint").textContent = J === 0
+      ? "Strict order: jobs are scheduled exactly in the order deposits came in. Each day fills with the next jobs in line until the next one doesn't fit or is more than " + (settings.maxDrive || 40) + " minutes away."
+      : "The next job in line always starts the next day. Any leftover time that day is filled with jobs that fit, closest ZIP first, from the next " + J + (J === 1 ? " job" : " jobs") + " in line" + ". Jobs more than " + (settings.maxDrive || 40) + " minutes apart (estimated drive time between ZIP codes) never share a day.";
+    $("schedSub").textContent = n ? n + " days · " + r1(work) + " hours of work" : "";
+
+    // schedule grid
+    const weeks = $("weeks"); weeks.textContent = "";
+    if (!n) weeks.append(el("div",{class:"empty-state"}, el("b",{text: loaded ? "Nothing scheduled yet" : "Loading your jobs…"}), loaded ? "Add a paid job with its pool size and ZIP code, and it will be placed on the first day with room." : ""));
+    for (let w = 0; w < Math.ceil(n/7); w++) {
+      const grid = el("div",{class:"days"});
+      for (let k = 0; k < 7; k++) {
+        const d = w*7 + k;
+        if (d >= n) { grid.append(el("div",{class:"day empty"}, el("div",{class:"dh"}, el("span",{text:"Day " + (d+1)}), el("span",{text:fmtDay(dateFor(d))})), el("div",{class:"bar"}, el("i",{style:"width:0"})))); continue; }
+        const day = days[d];
+        const box = el("div",{class:"day"},
+          el("div",{class:"dh"}, el("span",{text:"Day " + (d+1)}), el("span",{text:fmtDay(dateFor(d))})),
+          el("div",{class:"bar", title: r1(day.load) + " of " + CAP + " hours booked"}, el("i",{class: day.load >= CAP - EPS ? "full" : null, style:"width:" + Math.min(100, day.load/CAP*100) + "%"})),
+          el("div",{class:"dload" + (day.long ? " long" : ""), text: r1(day.load) + " / " + CAP + " h" + (day.long ? " · long day" : "")}));
+        day.entries.forEach(e => {
+          const j = e.x.j;
+          box.append(el("div",{class:"dj" + (e.dist != null && e.dist <= 2 ? " near" : "")},
+            el("span",{class:"fr", text: hrs(e.part)}),
+            el("b",{text: j.name || "Customer"}), el("br"),
+            shortJob(j.job) + (j.size ? " · " + pretty(j.size) : "") + (e.total > 1 ? " · day " + e.n + " of " + e.total : ""),
+            el("br"),
+            el("span",{class:"zip", text: [j.zip || "No ZIP", zipCity(j.zip)].filter(Boolean).join(" ") + (e.dist != null ? " · ≈" + e.dist + " min drive" : "")})));
+        });
+        grid.append(box);
+      }
+      weeks.append(el("div",{class:"week"}, el("h3",{text:"Week " + (w+1) + " · " + fmtDay(dateFor(w*7)) + " – " + fmtDay(dateFor(w*7+6))}), grid));
+    }
+
+    // queue table
+    const qb = $("queueBody"); qb.textContent = "";
+    if (!act.length) qb.append(el("tr",null, el("td",{colspan:"9"}, el("div",{class:"empty-state"}, el("b",{text: loaded ? "No jobs waiting" : "Loading…"}), loaded ? "Paid jobs you add will be listed here in the order deposits came in." : ""))));
+    act.forEach((j, idx) => {
+      const p = placed.get(j.id), e = estimate(j);
+      const inp = el("input",{class:"frac", type:"number", min:"0.5", max:"60", step:"0.5", "aria-label":"Hours for " + (j.name || "job"), placeholder: e.auto != null ? String(r1(e.auto)) : "Set", value: j.override > 0 && j.hoursOverride != null ? String(r1(j.override)) : ""});
+      inp.addEventListener("change", () => {
+        const v = inp.value.trim();
+        if (v === "") { write(jobsCol.doc(j.id).update({hoursOverride: null, fraction: null})); return; }
+        const num = Number(v); if (!(num > 0 && num <= 60)) { inp.classList.add("bad"); return; }
+        inp.classList.remove("bad"); write(jobsCol.doc(j.id).update({hoursOverride: num, fraction: null}));
+      });
+      const breakdown = e.parts.map(pp => pp[0] + " " + r1(pp[1])).join(" + ") + (e.missing.length ? (e.parts.length ? " · " : "") + "missing " + e.missing.join(", ") : "");
+      const sched = p ? (p.start === p.end ? "Day " + (p.start+1) + " · " + fmtDay(dateFor(p.start)) : "Days " + (p.start+1) + "–" + (p.end+1) + " · " + fmtDay(dateFor(p.start))) : "Needs hours";
+      const wk = p ? Math.ceil((p.end+1)/7) : null;
+      const actions = el("div",{class:"rowact"});
+      if (pendingDelete === j.id) {
+        actions.append(el("span",{class:"confirm"}, "Delete this job?",
+          el("button",{class:"linkbtn danger", type:"button", text:"Delete", onclick:() => { pendingDelete = null; write(jobsCol.doc(j.id).delete()); }}),
+          el("button",{class:"linkbtn", type:"button", text:"Keep", onclick:() => { pendingDelete = null; render(); }})));
+      } else {
+        actions.append(el("button",{class:"linkbtn", type:"button", text:"Mark done", onclick:() => write(jobsCol.doc(j.id).update({status:"done", doneAt: new Date().toISOString()}))}),
+                       el("button",{class:"linkbtn danger", type:"button", text:"Delete", onclick:() => { pendingDelete = j.id; render(); }}));
+      }
+      const extras = [j.teardownShape ? "Tear down old " + pretty(j.teardownShape + " " + (j.teardownSize||"")) : null, j.deck && j.deck !== "No deck" ? pretty(j.deck) : null, (j.addons||[]).length ? j.addons.join(", ") : null, j.notes].filter(Boolean).join(" · ");
+      qb.append(el("tr",null,
+        el("td",{class:"num", text:String(idx+1)}),
+        el("td",null, fmtRecv(j.received)),
+        el("td",null, el("b",{text:j.name || "—"}), j.example ? " " : null, j.example ? el("span",{class:"pill ex", text:"Example"}) : null, j.source === "website" ? " " : null, j.source === "website" ? el("span",{class:"pill web", text:"Website"}) : null, el("span",{class:"sub", text:[j.phone, j.address || j.where, j.bookingId].filter(Boolean).join(" · ")})),
+        el("td",null, shortJob(j.job) + (j.size ? " · " + pretty(j.shape + " " + j.size) : ""), el("span",{class:"sub", text: extras})),
+        el("td",null, j.zip ? [j.zip, el("span",{class:"sub", text: zipCity(j.zip) || "ZIP not recognized"})] : el("span",{class:"pill ex", text:"Add ZIP"})),
+        el("td",{class:"num"}, inp, el("span",{class:"sub", text: breakdown})),
+        el("td",null, sched, p && p.longDay ? el("span",{class:"sub", text:"Long day: kept to one day"}) : null, p && p.movedUp ? el("span",{class:"sub", text:"Moved up " + p.movedUp + (p.movedUp === 1 ? " spot" : " spots") + (p.dist != null ? " · ≈" + p.dist + " min drive" : "")}) : null),
+        el("td",null, wk ? el("span",{class:"pill wk", text: wk === 1 ? "Within 1 week" : "About " + wk + " weeks"}) : "—"),
+        el("td",null, actions)));
+    });
+
+    // done table
+    const done = jobs.filter(j => j.status === "done").map(norm).sort((a,b) => (b.doneAt||"").localeCompare(a.doneAt||""));
+    $("doneCount").textContent = done.length;
+    const dbody = $("doneBody"); dbody.textContent = "";
+    if (!done.length) dbody.append(el("tr",null, el("td",{colspan:"6", class:"muted"}, "Jobs you mark done move here.")));
+    done.forEach(j => { const h = hoursOf(j); dbody.append(el("tr",null,
+      el("td",null, fmtRecv(j.received)), el("td",null, el("b",{text:j.name||"—"})), el("td",null, shortJob(j.job) + (j.size ? " · " + pretty(j.size) : "")),
+      el("td",{class:"num", text: h ? hrs(h) : "—"}), el("td",null, fmtRecv(j.doneAt)),
+      el("td",null, el("button",{class:"linkbtn", type:"button", text:"Move back to list", onclick:() => write(jobsCol.doc(j.id).update({status:"waiting"}))})))); });
+
+    renderTimes();
+    updateEstimate();
+  }
+
+  // ---------- time values editor ----------
+  let timesBuilt = false;
+  function timeInput(key){
+    const i = el("input",{type:"number", min:"0", max:"60", step:"0.5", inputmode:"decimal", "data-key":key, placeholder: DEFAULT_TIMES[key] != null ? String(DEFAULT_TIMES[key]) : "Not set", "aria-label":"Hours for " + key.replace("|"," ")});
+    i.addEventListener("change", () => {
+      const v = i.value.trim(); const t = Object.assign({}, settings.times || {});
+      if (v === "" ) delete t[key]; else { const num = Number(v); if (!(num >= 0 && num <= 60)) { i.classList.add("bad"); return; } t[key] = num; }
+      i.classList.remove("bad"); settings.times = t; render(); saveSettings();
+    });
+    return i;
+  }
+  function renderTimes(){
+    const g = $("timesGrid");
+    if (!timesBuilt) {
+      const table = (title, rows) => el("div",{class:"tbox"}, el("h3",{text:title}),
+        el("table",{class:"ttable"}, el("thead",null, el("tr",null, el("th",{text:"Size"}), el("th",{class:"num", text:"Install"}), el("th",{class:"num", text:"Liner"}), el("th",{class:"num", text:"Tear-down"}))),
+          el("tbody",null, rows.map(([shape,size]) => el("tr",null, el("td",{text: pretty(size)}), el("td",{class:"num"}, timeInput("install|" + shape + " " + size)), el("td",{class:"num"}, timeInput("liner|" + shape + " " + size)), el("td",{class:"num"}, timeInput("teardown|" + shape + " " + size)))))));
+      g.append(table("Round pools", ROUND.map(s => ["Round", s])), table("Oval pools", OVAL.map(s => ["Oval", s])),
+        el("div",{class:"tbox"}, el("h3",{text:"Decks, add-ons, and service"}),
+          el("table",{class:"ttable"}, el("tbody",null, EXTRA_KEYS.map(([k,l]) => el("tr",null, el("td",{text:l}), el("td",{class:"num"}, timeInput(k)))))),
+          el("p",{class:"hint", text:"Blank boxes show the value you gave us in gray. \"Not set\" means no time yet: those jobs need hours typed in until you fill it in. Tear-down times go by the size of the old pool being removed. Heater, light, sanitizer system, and wall foam add no time."})));
+      timesBuilt = true;
+    }
+    g.querySelectorAll("input[data-key]").forEach(i => {
+      if (document.activeElement === i) return;
+      const o = settings.times && settings.times[i.dataset.key];
+      i.value = o != null ? String(o) : "";
+    });
+  }
+
+  // ---------- writes ----------
+  function write(p){ if (!p) return; setStatus("Saving…"); p.then(() => setStatus("All changes saved")).catch(e => setStatus("Couldn't save: " + (e && e.message ? e.message : "try again"), true)); }
+  function saveSettings(){ if (settingsDoc) write(settingsDoc.set({startDate: settings.startDate || "", dayHours: Number(settings.dayHours)||12, maxJump: Number(settings.maxJump)||0, maxDrive: Number(settings.maxDrive)||40, times: settings.times || {}})); }
+
+  // ---------- form ----------
+  function fillSizes(){
+    const job = $("fJob").value;
+    const install = INSTALL_JOBS.includes(job);
+    $("fShapeWrap").hidden = install || job === "Other";
+    const shape = job === "Round pool installation" ? "Round" : job === "Oval pool installation" ? "Oval" : $("fShape").value;
+    const prev = $("fSize").value;
+    $("fSize").textContent = "";
+    (shape === "Oval" ? OVAL : ROUND).forEach(s => $("fSize").append(el("option",{value:s, text:pretty(s)})));
+    if ([...$("fSize").options].some(o => o.value === prev)) $("fSize").value = prev;
+    const deckPrev = $("fDeck").value;
+    $("fDeck").textContent = "";
+    (install ? ["No deck", ...OUR_DECKS, "Match up to existing deck"] : job === "Liner replacement" ? ["No deck","Deck"] : ["No deck"])
+      .forEach(d => $("fDeck").append(el("option",{value:d, text: d === "Deck" ? "Has a deck" : pretty(d)})));
+    if ([...$("fDeck").options].some(o => o.value === deckPrev)) $("fDeck").value = deckPrev;
+    $("fDeck").disabled = !install && job !== "Liner replacement";
+    $("fTearWrap").hidden = !install; if (!install) $("fTear").value = "";
+    fillTearSizes();
+    updateEstimate();
+  }
+  function fillTearSizes(){
+    const ts = $("fTear").value; $("fTearSizeWrap").hidden = !ts;
+    if (!ts) return;
+    const prev = $("fTearSize").value, list = ts === "Oval" ? OVAL : ROUND;
+    $("fTearSize").textContent = ""; list.forEach(sz => $("fTearSize").append(el("option",{value:sz, text:pretty(sz)})));
+    const newShape = $("fJob").value === "Oval pool installation" ? "Oval" : "Round";
+    if (list.includes(prev)) $("fTearSize").value = prev; else if (ts === newShape && list.includes($("fSize").value)) $("fTearSize").value = $("fSize").value;
+  }
+  function formJob(){
+    const job = $("fJob").value;
+    return norm({job, shape: job === "Round pool installation" ? "Round" : job === "Oval pool installation" ? "Oval" : $("fShape").value,
+      size: $("fSize").value, deck: $("fDeck").value, teardownShape: $("fTear").value || "", teardownSize: $("fTear").value ? $("fTearSize").value : "", addons: [...$("fAddons").querySelectorAll("input:checked")].map(c => c.value)});
+  }
+  function updateEstimate(){
+    const e = estimate(formJob());
+    const box = $("fEstimate"); box.textContent = "";
+    if (e.auto != null) box.append(el("b",{text:"Estimated time: " + hrs(e.auto)}), " (" + e.parts.map(p => p[0] + " " + r1(p[1])).join(" + ") + ")");
+    else box.append(el("b",{text:"No time value yet for this job."}), " Type the hours below, or fill in " + e.missing.join(", ") + " under Time values.");
+    if (e.auto != null && e.missing.length) box.append(el("span",{class:"muted", text:" · Not included: " + e.missing.join(", ")}));
+  }
+  ["fJob","fShape"].forEach(id => $(id).addEventListener("change", fillSizes));
+  ["fSize","fDeck","fTearSize"].forEach(id => $(id).addEventListener("change", updateEstimate));
+  $("fTear").addEventListener("change", () => { fillTearSizes(); updateEstimate(); });
+  $("fAddons").addEventListener("change", updateEstimate);
+  $("fReceived").value = nowLocal();
+  fillSizes();
+
+  $("jobForm").addEventListener("submit", ev => {
+    ev.preventDefault();
+    const name = $("fName").value.trim(), rec = $("fReceived").value, zip = $("fZip").value.trim(), hv = $("fHours").value.trim();
+    const j = formJob(); const e = estimate(j);
+    const bad = [];
+    if (!name) bad.push($("fName")); if (!rec) bad.push($("fReceived")); if (!/^\d{5}$/.test(zip)) bad.push($("fZip"));
+    if (hv && !(Number(hv) > 0 && Number(hv) <= 60)) bad.push($("fHours"));
+    ["fName","fReceived","fZip","fHours"].forEach(id => $(id).classList.toggle("bad", bad.includes($(id))));
+    if (bad.length) { $("formErr").hidden = false; $("formErr").textContent = "Add the customer's name, when the deposit came in, and a 5-digit ZIP code."; bad[0].focus(); return; }
+    if (!jobsCol) { $("formErr").hidden = false; $("formErr").textContent = "Your job list isn't connected yet. Wait a moment and try again."; return; }
+    $("formErr").hidden = true;
+    const doc = {name, phone:$("fPhone").value.trim(), received: rec, job: j.job, shape: j.shape, size: j.size, deck: j.deck, teardownShape: j.teardownShape, teardownSize: j.teardownSize, addons: j.addons,
+      address: $("fAddress").value.trim(), zip, bookingId: $("fBooking").value.trim(), notes: $("fNotes").value.trim(), status:"waiting", created: Date.now()};
+    if (hv) doc.hoursOverride = Number(hv);
+    write(jobsCol.add(doc));
+    ["fName","fPhone","fAddress","fZip","fBooking","fHours","fNotes","pasteBox"].forEach(id => $(id).value = "");
+    $("fAddons").querySelectorAll("input").forEach(c => c.checked = false); $("fTear").value = "";
+    $("fReceived").value = nowLocal(); $("pasteMsg").textContent = ""; fillSizes(); $("fName").focus();
+  });
+
+  $("pasteFill").addEventListener("click", () => {
+    const t = $("pasteBox").value;
+    const get = k => { const m = t.match(new RegExp("^\\s*" + k + "\\s*:\\s*(.+)$","mi")); return m ? m[1].trim() : ""; };
+    let n = 0; const setIf = (id, v) => { if (v) { $(id).value = v; n++; } };
+    setIf("fName", get("Name")); setIf("fPhone", get("Phone"));
+    const bk = (t.match(/\bBSP-\d{6}-[A-Z0-9]{4}\b/) || [])[0]; setIf("fBooking", bk);
+    const job = get("Job"); if (job && [...$("fJob").options].some(o => o.value === job)) { $("fJob").value = job; n++; }
+    const pool = /^(Round|Oval)\s+(.+)$/.exec(get("Pool"));
+    if (pool) { $("fShape").value = pool[1]; fillSizes(); if ([...$("fSize").options].some(o => o.value === pool[2].trim())) { $("fSize").value = pool[2].trim(); n++; } } else fillSizes();
+    const deck = get("Deck"); if (deck && [...$("fDeck").options].some(o => o.value === deck)) { $("fDeck").value = deck; n++; }
+    const ex = get("Existing pool"); let tearNote = "";
+    const tm = /tear down and haul away\s*\((round|oval)\s*([^)]*)\)/i.exec(ex);
+    if (tm && INSTALL_JOBS.includes($("fJob").value)) {
+      $("fTear").value = tm[1][0].toUpperCase() + tm[1].slice(1).toLowerCase(); fillTearSizes(); n++;
+      const oldSize = (tm[2] || "").trim();
+      if (oldSize && [...$("fTearSize").options].some(o => o.value === oldSize)) $("fTearSize").value = oldSize;
+      else tearNote = " Check the old pool's size for the tear-down.";
+    }
+    const adds = get("Add-ons"); $("fAddons").querySelectorAll("input").forEach(c => { c.checked = adds.split(/,\s*/).includes(c.value); });
+    const addr = get("Address"); if (addr) { const z = (addr.match(/\b(\d{5})\b(?!.*\b\d{5}\b)/) || [])[1]; setIf("fAddress", addr.replace(/\s*\b\d{5}\b\s*$/, "")); setIf("fZip", z); }
+    const extra = [["Existing pool",get("Existing pool")],["Deck notes",get("Deck notes")],["County",get("County")],["Notes",get("Notes")]]
+      .filter(([,v]) => v && v !== "None" && v !== "No existing pool").map(([k,v]) => k + ": " + v);
+    setIf("fNotes", extra.join(" · "));
+    updateEstimate();
+    $("pasteMsg").textContent = n ? "Filled in " + n + " fields. Set the deposit time from your Stripe payment, then add the job." + tearNote : "Couldn't find any details. Paste the text exactly as it was sent.";
+    if (n) $("fReceived").focus();
+  });
+
+  $("startDate").addEventListener("change", () => { settings.startDate = $("startDate").value; render(); saveSettings(); });
+  $("dayHours").addEventListener("change", () => { settings.dayHours = Number($("dayHours").value); render(); saveSettings(); });
+  $("maxJump").addEventListener("change", () => { settings.maxJump = Number($("maxJump").value); render(); saveSettings(); });
+  $("maxDrive").addEventListener("change", () => { settings.maxDrive = Number($("maxDrive").value); render(); saveSettings(); });
+
+  function askClearEx(){
+    const wrap = $("exClearWrap"); wrap.textContent = "";
+    wrap.append(el("span",{class:"confirm"}, "Delete all example jobs?",
+      el("button",{class:"btn small", type:"button", text:"Delete examples", onclick:() => { jobs.filter(j => j.example).forEach(j => write(jobsCol.doc(j.id).delete())); resetEx(); }}),
+      el("button",{class:"linkbtn", type:"button", text:"Cancel", onclick:resetEx})));
+  }
+  function resetEx(){ const wrap = $("exClearWrap"); wrap.textContent = ""; wrap.append(el("button",{class:"btn small ghost", type:"button", text:"Clear examples", onclick:askClearEx})); }
+
+
+  render();
+
+  // ---------- storage ----------
+  const timer = setTimeout(() => { if (!loaded) setStatus("Can't reach your saved jobs yet. Check your connection; this will keep trying.", true); }, 10000);
+  (async () => {
+    db = window.claude && window.claude.use ? await window.claude.use("db") : null;
+    if (!db) { clearTimeout(timer); loaded = true; setStatus("Couldn't connect to your job list.", true); render(); return; }
+    jobsCol = db.collection("jobs"); settingsDoc = db.doc("settings/main");
+    jobsCol.onSnapshot(snap => {
+      jobs = snap.docs.filter(d => d.exists).map(d => Object.assign({id:d.id}, d.data()));
+      if (!snap.fromCache) { loaded = true; clearTimeout(timer); setStatus(jobs.length ? "Up to date" : "Up to date · no jobs yet"); }
+      if (pendingDelete && !jobs.some(j => j.id === pendingDelete)) pendingDelete = null;
+      render();
+    }, e => { clearTimeout(timer); loaded = true; setStatus(e && e.code === "permission_denied" ? "Please sign in." : "Couldn't load your jobs. Reload the page to try again.", true); render(); });
+    settingsDoc.onSnapshot(snap => {
+      if (!snap.exists) return;
+      const d = snap.data();
+      settings.startDate = d.startDate || "";
+      settings.dayHours = Number(d.dayHours) || 12;
+      settings.maxJump = d.maxJump != null ? Number(d.maxJump) : (d.mode === "strict" ? 0 : 5);
+      settings.maxDrive = Number(d.maxDrive) || 40;
+      settings.times = d.times && typeof d.times === "object" ? d.times : {};
+      render();
+    }, () => {});
+  })();
+})();
+</script>
+
+</body>
+</html>

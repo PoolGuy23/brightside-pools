@@ -1,0 +1,9 @@
+{
+  "name": "brightside-pools-site",
+  "private": true,
+  "type": "module",
+  "description": "Brightside Pools website, booking functions, and private job list",
+  "dependencies": {
+    "@netlify/blobs": "11.1.6"
+  }
+}
