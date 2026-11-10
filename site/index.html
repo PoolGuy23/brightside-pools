@@ -2400,7 +2400,7 @@ loadStories();
     if (b.x0 > 0.05) dimLine(g, [0, cy], [b.x0, cy], ftin(b.x0), "prop");
     if (Y.w - b.x1 > 0.05) dimLine(g, [b.x1, cy], [Y.w, cy], ftin(Y.w - b.x1), "prop");
     if (b.y0 > 0.05) dimLine(g, [cx, 0], [cx, b.y0], ftin(b.y0), "prop");
-    if (Y.d - b.y1 > 0.05) dimLine(g, [cx, b.y1], [cx, Y.d], ftin(Y.d - b.y1), "prop");
+    if (o.type !== "pool" && Y.d - b.y1 > 0.05) dimLine(g, [cx, b.y1], [cx, Y.d], ftin(Y.d - b.y1), "prop");   // pools show the house instead
   }
   // A filter pad always sits 3' off the water's edge with its long side facing the pool.
   // On an oval pool it can only sit off one of the curved ends.
@@ -2542,11 +2542,14 @@ loadStories();
     // dimensions: pinned objects, the selected object, saved measurements
     const dims = mk("g", {class:"dims"}, svg);
     plan.items.forEach(o => { if (o.showDims || o.id === selected) propertyDims(dims, o); });
+    // every pool always shows how far it is from the house
+    const houses = plan.items.filter(o => o.type === "house");
+    plan.items.filter(o => o.type === "pool").forEach(p => houses.forEach(h => { const r = gap(p, h); if (!r.overlap && isFinite(r.d)) dimLine(dims, r.p1, r.p2, ftin(r.d), "house"); }));
     const sel = selected && byId(selected);
     if (sel) {
       let near = null;
       plan.items.forEach(o => { if (o.id === sel.id) return; const r = gap(sel, o); if (!near || r.d < near.r.d) near = {o, r}; });
-      if (near && !near.r.overlap && isFinite(near.r.d)) dimLine(dims, near.r.p1, near.r.p2, ftin(near.r.d), "near");
+      if (near && !near.r.overlap && isFinite(near.r.d) && !((sel.type === "pool" && near.o.type === "house") || (sel.type === "house" && near.o.type === "pool"))) dimLine(dims, near.r.p1, near.r.p2, ftin(near.r.d), "near");
     }
     plan.measures.forEach(m => { const a = byId(m.a), b = byId(m.b); if (!a || !b) return; const r = gap(a, b); if (!r.overlap) dimLine(dims, r.p1, r.p2, ftin(r.d), "meas"); });
     renderSide(); renderChecks(); save();
@@ -2711,7 +2714,7 @@ loadStories();
       if (o.type === "line") { lines.push(o.label + ": " + (o.vertical ? ftin(o.cx) + " from the left side" : ftin(o.cy) + " from the back property line")); return; }
       const b = bbox(o);
       lines.push((o.type === "pool" ? o.label + " (" + o.pool.shape.toLowerCase() + " " + o.pool.size + ")" : o.label + " (" + ftin(o.w) + (o.type === "tree" ? " wide" : " × " + ftin(o.h)) + ")") +
-        ": " + ftin(b.x0) + " from left, " + ftin(Y.w - b.x1) + " from right, " + ftin(b.y0) + " from back, " + ftin(Y.d - b.y1) + " from front");
+        ": " + ftin(b.x0) + " from left, " + ftin(Y.w - b.x1) + " from right, " + ftin(b.y0) + " from back" + (o.type === "pool" ? "" : ", " + ftin(Y.d - b.y1) + " from front"));
     });
     const pools = plan.items.filter(o => o.type === "pool");
     pools.forEach(p => plan.items.forEach(o => { if (o.id !== p.id) { const r = gap(p, o); lines.push(p.label + " to " + o.label + ": " + (r.overlap ? "overlapping" : ftin(r.d))); } }));
