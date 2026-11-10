@@ -2400,8 +2400,9 @@ loadStories();
     if (b.y0 > 0.05) dimLine(g, [cx, 0], [cx, b.y0], ftin(b.y0), "prop");
     if (Y.d - b.y1 > 0.05) dimLine(g, [cx, b.y1], [cx, Y.d], ftin(Y.d - b.y1), "prop");
   }
-  // A filter pad keeps its long side facing the pool's center, wherever it sits around the pool.
+  // A filter pad always sits 3' off the water's edge with its long side facing the pool.
   // On an oval pool it can only sit off one of the curved ends.
+  const FILTER_GAP = 3;
   function orientFilters(){
     const pools = plan.items.filter(o => o.type === "pool");
     plan.items.forEach(f => {
@@ -2409,16 +2410,24 @@ loadStories();
       const lo = Math.min(f.w, f.h), hi = Math.max(f.w, f.h); f.w = hi; f.h = lo;
       if (!pools.length) { f.rot = 0; return; }
       const p = pools.map(q => ({q, d: Math.hypot(f.cx - q.cx, f.cy - q.cy)})).sort((a, b) => a.d - b.d)[0].q;
-      let ccx = p.cx, ccy = p.cy;                       // the center the long side faces
+      let ccx = p.cx, ccy = p.cy, r = p.w / 2, ang;
       if (shapeOf(p) === "stadium") {
-        const horiz = p.w >= p.h, r = Math.min(p.w, p.h) / 2, half = Math.max(p.w, p.h) / 2 - r;
-        const need = half + hi / 2;                     // keep the whole pad past the straight sides
-        let u = horiz ? f.cx - p.cx : f.cy - p.cy;
-        if (Math.abs(u) < need) { u = (u < 0 ? -1 : 1) * need; if (horiz) f.cx = p.cx + u; else f.cy = p.cy + u; }
-        if (horiz) ccx = p.cx + Math.sign(u) * half; else ccy = p.cy + Math.sign(u) * half;
+        const horiz = p.w >= p.h, half = Math.max(p.w, p.h) / 2;
+        r = Math.min(p.w, p.h) / 2;
+        const u = horiz ? f.cx - p.cx : f.cy - p.cy, side = u < 0 ? -1 : 1;
+        if (horiz) ccx = p.cx + side * (half - r); else ccy = p.cy + side * (half - r);
+        const axis = horiz ? (side > 0 ? 0 : Math.PI) : (side > 0 ? Math.PI/2 : -Math.PI/2);
+        const R = r + FILTER_GAP + lo / 2, maxOff = Math.atan2(R, hi / 2);   // keep the whole pad past the straight sides
+        let off = Math.atan2(f.cy - ccy, f.cx - ccx) - axis;
+        off = Math.atan2(Math.sin(off), Math.cos(off));
+        ang = axis + Math.max(-maxOff, Math.min(maxOff, off));
+      } else {
+        ang = (f.cx === ccx && f.cy === ccy) ? 0 : Math.atan2(f.cy - ccy, f.cx - ccx);
       }
-      const dx = f.cx - ccx, dy = f.cy - ccy;
-      f.rot = (dx || dy) ? Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 90) * 10) / 10 : 0;
+      const R = r + FILTER_GAP + lo / 2;
+      f.cx = Math.round((ccx + R * Math.cos(ang)) * 100) / 100;
+      f.cy = Math.round((ccy + R * Math.sin(ang)) * 100) / 100;
+      f.rot = Math.round((ang * 180 / Math.PI + 90) * 10) / 10;
     });
   }
   function render(){
@@ -2507,7 +2516,7 @@ loadStories();
     const row = document.createElement("div"); row.className = "plbtns";
     const btn = (t, fn, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = cls || "btn small ghost"; b.textContent = t; b.addEventListener("click", fn); row.append(b); return b; };
     if (o.type === "line") btn("Turn line", () => { o.vertical = !o.vertical; if (o.vertical) o.cx = plan.yard.w/2; else o.cy = plan.yard.d/2; render(); });
-    else if (o.type === "filter") { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = "Turns on its own so the long side faces the pool. On an oval pool it stays on one of the curved ends."; row.append(t); }
+    else if (o.type === "filter") { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = "Stays 3′ off the water's edge with its long side facing the pool. Drag it to slide it around the pool. On an oval pool it stays on one of the curved ends."; row.append(t); }
     else if (o.w !== o.h) btn("Rotate 90°", () => { const t = o.w; o.w = o.h; o.h = t; render(); });
     btn("Measure to…", () => { measureFrom = o.id; render(); });
     btn("Copy", () => { const c = JSON.parse(JSON.stringify(o)); c.id = uid(); c.cx += 4; c.cy += 4; c.showDims = false; plan.items.push(c); selected = c.id; render(); });
