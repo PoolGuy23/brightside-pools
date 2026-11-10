@@ -2407,7 +2407,9 @@ loadStories();
     const pools = plan.items.filter(o => o.type === "pool");
     plan.items.forEach(f => {
       if (f.type !== "filter") return;
-      const lo = Math.min(f.w, f.h), hi = Math.max(f.w, f.h); f.w = hi; f.h = lo;
+      const heater = Math.min(f.w, f.h) >= 4;          // only 4'x2' (filter) or 4'x4' (filter and heater)
+      f.w = 4; f.h = heater ? 4 : 2;
+      const lo = f.h, hi = f.w;
       if (!pools.length) { f.rot = 0; return; }
       const p = pools.map(q => ({q, d: Math.hypot(f.cx - q.cx, f.cy - q.cy)})).sort((a, b) => a.d - b.d)[0].q;
       let ccx = p.cx, ccy = p.cy, r = p.w / 2, ang;
@@ -2502,6 +2504,17 @@ loadStories();
       field("Pool shape", shapeS); field("Pool size", sizeS);
     } else if (o.type === "tree") {
       field("Width of branches (feet)", num(o.w, v => { o.w = o.h = Math.max(1, v); }));
+    } else if (o.type === "filter") {
+      const padS = document.createElement("select");
+      [["2", "Filter only · 4′ × 2′"], ["4", "Filter and heater · 4′ × 4′"]].forEach(([v, t]) => { const op = document.createElement("option"); op.value = v; op.textContent = t; padS.append(op); });
+      padS.value = Math.min(o.w, o.h) >= 4 ? "4" : "2";
+      padS.addEventListener("change", () => {
+        const heater = padS.value === "4", wasDefault = /^Filter( and heater)? pad( \d+)?$/.test(o.label);
+        o.w = 4; o.h = heater ? 4 : 2;
+        if (wasDefault) o.label = o.label.replace(/^Filter( and heater)? pad/, heater ? "Filter and heater pad" : "Filter pad");
+        render();
+      });
+      field("Pad size", padS);
     } else if (o.type !== "line") {
       field("Width (feet)", num(o.w, v => { o.w = Math.max(0.5, v); }));
       field("Length (feet)", num(o.h, v => { o.h = Math.max(0.5, v); }));
