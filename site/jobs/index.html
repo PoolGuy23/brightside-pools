@@ -346,7 +346,7 @@ details > summary.phead::-webkit-details-marker{display:none}
   const EPS = 1e-6;
   const ROUND = ["15'","16'","18'","21'","24'","27'","28'","30'","33'"];
   const OVAL = ["12'x17'","12'x18'","12'x20'","12'x24'","15'x24'","15'x26'","15'x30'","16'x28'","16'x32'","18'x33'","18'x40'"];
-  const OUR_DECKS = ["6'x9' deck","6'x14' deck","5.5'x13' deck"];
+  const OUR_DECKS = ["6'x9' deck","6'x14' deck","5'x13.5' deck","5.5'x13' deck"];
   const INSTALL_JOBS = ["Round pool installation","Oval pool installation"];
 
   // Owner-provided time values (hours). Blank = not set yet; the owner can fill these in under "Time values".
@@ -367,7 +367,7 @@ details > summary.phead::-webkit-details-marker{display:none}
     "teardown|Oval 15'x24'":3.5, "teardown|Oval 15'x26'":3.5, "teardown|Oval 15'x30'":3.5, "teardown|Oval 16'x28'":3.5, "teardown|Oval 16'x32'":3.5, "teardown|Oval 18'x33'":3.5, "teardown|Oval 18'x40'":3.5,
     "deck":4, "deckMatch":1, "drain":0.5, "opening":1, "closing":1
   };
-  const EXTRA_KEYS = [["deck","One of our decks (6′×9′, 6′×14′, 5.5′×13′)"],["deckMatch","Matching up to an existing deck"],["drain","Center (main) drain"],["opening","Pool opening"],["closing","Pool closing"]];
+  const EXTRA_KEYS = [["deck","One of our decks (6′×9′, 6′×14′, 5′×13.5′)"],["deckMatch","Matching up to an existing deck"],["drain","Center (main) drain"],["opening","Pool opening"],["closing","Pool closing"]];
 
   let jobs = [];
   let settings = {startDate:"", dayHours:12, maxJump:5, maxDrive:40, times:{}};
