@@ -2397,7 +2397,26 @@ loadStories();
     if (b.y0 > 0.05) dimLine(g, [cx, 0], [cx, b.y0], ftin(b.y0), "prop");
     if (Y.d - b.y1 > 0.05) dimLine(g, [cx, b.y1], [cx, Y.d], ftin(Y.d - b.y1), "prop");
   }
+  // A filter pad always faces the nearest pool with its short side.
+  function orientFilters(){
+    const pools = plan.items.filter(o => o.type === "pool");
+    if (!pools.length) return;
+    plan.items.forEach(f => {
+      if (f.type !== "filter") return;
+      let best = null;
+      pools.forEach(p => {
+        const qx = Math.max(p.cx - p.w/2, Math.min(f.cx, p.cx + p.w/2)), qy = Math.max(p.cy - p.h/2, Math.min(f.cy, p.cy + p.h/2));
+        let dx = f.cx - qx, dy = f.cy - qy;
+        if (!dx && !dy) { dx = f.cx - p.cx; dy = f.cy - p.cy; }
+        const d = Math.hypot(dx, dy);
+        if (!best || d < best.d) best = {d, dx, dy};
+      });
+      const lo = Math.min(f.w, f.h), hi = Math.max(f.w, f.h);
+      if (Math.abs(best.dx) >= Math.abs(best.dy)) { f.w = hi; f.h = lo; } else { f.w = lo; f.h = hi; }
+    });
+  }
   function render(){
+    orientFilters();
     const Y = plan.yard, pad = Math.max(Y.w, Y.d) * 0.08, fs = Math.max(Y.w, Y.d) / 42;
     plan.__fs = fs;
     svg.setAttribute("viewBox", `${-pad} ${-pad} ${Y.w + pad*2} ${Y.d + pad*2}`);
@@ -2482,6 +2501,7 @@ loadStories();
     const row = document.createElement("div"); row.className = "plbtns";
     const btn = (t, fn, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = cls || "btn small ghost"; b.textContent = t; b.addEventListener("click", fn); row.append(b); return b; };
     if (o.type === "line") btn("Turn line", () => { o.vertical = !o.vertical; if (o.vertical) o.cx = plan.yard.w/2; else o.cy = plan.yard.d/2; render(); });
+    else if (o.type === "filter") { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = "Turns on its own so the short side faces the pool."; row.append(t); }
     else if (o.w !== o.h) btn("Rotate 90°", () => { const t = o.w; o.w = o.h; o.h = t; render(); });
     btn("Measure to…", () => { measureFrom = o.id; render(); });
     btn("Copy", () => { const c = JSON.parse(JSON.stringify(o)); c.id = uid(); c.cx += 4; c.cy += 4; c.showDims = false; plan.items.push(c); selected = c.id; render(); });
