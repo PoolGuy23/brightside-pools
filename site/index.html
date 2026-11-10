@@ -2435,7 +2435,7 @@ loadStories();
   // Decks come only in the sizes we sell: 6'x9', 6'x14' and 5'x13.5'.
   const DECKS = [[6, 9], [6, 14], [5, 13.5]];
   function deckKey(o){ const lo = Math.min(o.w, o.h), hi = Math.max(o.w, o.h); let best = 0, bd = 1e9; DECKS.forEach(([a, b], i) => { const d = Math.abs(a - lo) + Math.abs(b - hi); if (d < bd) { bd = d; best = i; } }); return best; }
-  // Each deck butts right up to the nearest pool's wall, with its long side pointing at the pool.
+  // Each deck butts right up to the nearest pool's wall, with its long side running along the wall.
   function poolSeg(p){                     // the line a pool's wall wraps around (a point for a round pool), and its radius
     if (shapeOf(p) !== "stadium") return {a:[p.cx, p.cy], b:[p.cx, p.cy], r:p.w/2};
     const horiz = p.w >= p.h, r = Math.min(p.w, p.h)/2, half = Math.max(p.w, p.h)/2 - r;
@@ -2452,10 +2452,10 @@ loadStories();
       pools.forEach(p => { const sg = poolSeg(p), q = segPt([o.cx, o.cy], sg.a, sg.b); const d = q.d - sg.r; if (!best || d < best.d) best = {d, q: q.q, r: sg.r, p}; });
       let dx = o.cx - best.q[0], dy = o.cy - best.q[1];
       if (Math.hypot(dx, dy) < 1e-6) { dx = 1; dy = 0; }
-      const ang = Math.atan2(dy, dx), R = best.r + b/2 + 0.02;
+      const ang = Math.atan2(dy, dx), R = best.r + a/2 + 0.02;
       o.cx = Math.round((best.q[0] + R*Math.cos(ang)) * 100) / 100;
       o.cy = Math.round((best.q[1] + R*Math.sin(ang)) * 100) / 100;
-      o.rot = Math.round(ang * 1800 / Math.PI) / 10;
+      o.rot = Math.round((ang * 180 / Math.PI + 90) * 10) / 10;
     });
   }
   function render(){
@@ -2563,7 +2563,7 @@ loadStories();
     const btn = (t, fn, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = cls || "btn small ghost"; b.textContent = t; b.addEventListener("click", fn); row.append(b); return b; };
     if (o.type === "line") btn("Turn line", () => { o.vertical = !o.vertical; if (o.vertical) o.cx = plan.yard.w/2; else o.cy = plan.yard.d/2; render(); });
     else if (o.type === "filter") { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = "Stays 3′ off the water's edge with its long side facing the pool. Drag it to slide it around the pool. On an oval pool it stays on one of the curved ends."; row.append(t); }
-    else if (o.type === "deck" && plan.items.some(x => x.type === "pool")) { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = "Sits right up against the pool with its long side pointing at the pool. Drag it to slide it around the pool."; row.append(t); }
+    else if (o.type === "deck" && plan.items.some(x => x.type === "pool")) { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = "Sits right up against the pool with its long side running along the pool wall. Drag it to slide it around the pool."; row.append(t); }
     else if (o.w !== o.h) btn("Rotate 90°", () => { const t = o.w; o.w = o.h; o.h = t; render(); });
     btn("Measure to…", () => { measureFrom = o.id; render(); });
     btn("Copy", () => { const c = JSON.parse(JSON.stringify(o)); c.id = uid(); c.cx += 4; c.cy += 4; c.showDims = false; plan.items.push(c); selected = c.id; render(); });
