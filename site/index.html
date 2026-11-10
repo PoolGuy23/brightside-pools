@@ -346,6 +346,7 @@ section:not(.band) .tile{background:var(--band)}
 .plsvg .o-pool{fill:url(#water);stroke:var(--fg);stroke-width:.35}
 .plsvg .o-house{fill:var(--bldg);stroke:var(--bldgline);stroke-width:.3}
 .plsvg .o-shed{fill:var(--wood);stroke:var(--woodline);stroke-width:.3}
+.plsvg .seam{stroke:var(--woodline);stroke-width:.2;pointer-events:none}
 .plsvg .o-deck{fill:var(--wood);stroke:var(--woodline);stroke-width:.3;opacity:.85}
 .plsvg .o-patio{fill:var(--stone);stroke:var(--bldgline);stroke-width:.25}
 .plsvg .o-tree{fill:var(--leaf);fill-opacity:.55;stroke:var(--leaf);stroke-width:.3}
@@ -2351,6 +2352,7 @@ loadStories();
   }
   function poly(o){                       // outline points (feet) used for distances
     const {cx, cy, w, h} = o, s = shapeOf(o), pts = [];
+    if (o.curve) return o.curve;           // curved 5'x13.5' deck
     if (s === "rect") {
       const c = [[-w/2, -h/2],[w/2, -h/2],[w/2, h/2],[-w/2, h/2]], a = (o.rot || 0) * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
       return c.map(([x, y]) => [cx + x*cs - y*sn, cy + x*sn + y*cs]);
@@ -2446,8 +2448,10 @@ loadStories();
     plan.items.forEach(o => {
       if (o.type !== "deck") return;
       const [a, b] = DECKS[deckKey(o)];
+      delete o.curve;
       if (!pools.length) { if (o.w >= o.h) { o.w = b; o.h = a; } else { o.w = a; o.h = b; } return; }
       o.w = b; o.h = a;                    // long side runs along the deck's own x axis
+      if (deckKey(o) === CURVED) { curveDeck(o, pools); return; }
       let best = null;
       pools.forEach(p => { const sg = poolSeg(p), q = segPt([o.cx, o.cy], sg.a, sg.b); const d = q.d - sg.r; if (!best || d < best.d) best = {d, q: q.q, r: sg.r, p}; });
       let dx = o.cx - best.q[0], dy = o.cy - best.q[1];
@@ -2457,6 +2461,46 @@ loadStories();
       o.cy = Math.round((best.q[1] + R*Math.sin(ang)) * 100) / 100;
       o.rot = Math.round((ang * 180 / Math.PI + 90) * 10) / 10;
     });
+  }
+  // The 5'x13.5' deck is two 5'x5' sections joined by an angled piece, so it follows the pool's curve.
+  // It can go anywhere around a round pool, but only on the curved ends of an oval pool.
+  const CURVED = 2, SQ = 5, MID = 3.5;
+  function curveDeck(o, pools){
+    let best = null;
+    pools.forEach(p => {
+      let cx = p.cx, cy = p.cy, r = p.w/2, axis = null;
+      if (shapeOf(p) === "stadium") {
+        const horiz = p.w >= p.h, sg = poolSeg(p), u = horiz ? o.cx - p.cx : o.cy - p.cy, side = u < 0 ? -1 : 1;
+        r = sg.r; const half = Math.max(p.w, p.h)/2 - r;
+        if (horiz) cx = p.cx + side*half; else cy = p.cy + side*half;
+        axis = horiz ? (side > 0 ? 0 : Math.PI) : (side > 0 ? Math.PI/2 : -Math.PI/2);
+      }
+      const d = Math.hypot(o.cx - cx, o.cy - cy) - r;
+      if (!best || d < best.d) best = {d, cx, cy, r, axis};
+    });
+    const {cx, cy, r, axis} = best;
+    const del = (SQ/2 + MID/2) / r;                 // angle from the middle of the deck to the middle of each square
+    let th = Math.atan2(o.cy - cy, o.cx - cx);
+    if (!isFinite(th)) th = 0;
+    if (axis != null) {                             // keep the whole deck on the curved end
+      const lim = Math.max(0, Math.PI/2 - del - (SQ/2) / r);
+      let off = Math.atan2(Math.sin(th - axis), Math.cos(th - axis));
+      th = axis + Math.max(-lim, Math.min(lim, off));
+    }
+    const R0 = r + 0.02;
+    const sq = t => {                               // one 5' section, its inner edge against the wall at angle t
+      const nx = Math.cos(t), ny = Math.sin(t), tx = -ny, ty = nx, mx = cx + R0*nx, my = cy + R0*ny;
+      const P = (s1, s2) => [mx + tx*s1 + nx*s2, my + ty*s1 + ny*s2];
+      return {inA: P(-SQ/2, 0), inB: P(SQ/2, 0), outA: P(-SQ/2, SQ), outB: P(SQ/2, SQ)};
+    };
+    const A = sq(th - del), B = sq(th + del);
+    const rd = q => [Math.round(q[0]*100)/100, Math.round(q[1]*100)/100];
+    // outline: section A, the angled middle piece, section B
+    o.curve = [A.outA, A.inA, A.inB, B.inA, B.inB, B.outB, B.outA, A.outB].map(rd);
+    o.seams = [[A.inB, A.outB], [B.inA, B.outA]].map(l => l.map(rd));
+    o.cx = Math.round((cx + (r + SQ/2) * Math.cos(th)) * 100) / 100;
+    o.cy = Math.round((cy + (r + SQ/2) * Math.sin(th)) * 100) / 100;
+    o.rot = 0;
   }
   function render(){
     fixDecks();
@@ -2482,7 +2526,8 @@ loadStories();
     ordered.forEach(o => {
       const g = mk("g", {class:"obj" + (o.id === selected ? " sel" : "") + (measureFrom ? " pickable" : ""), "data-id":o.id, tabindex:"0", role:"button", "aria-label":o.label}, svg);
       const s = shapeOf(o), cls = o.type === "pool" ? "o-pool" : (TYPES[o.type].cls || "o-other");
-      if (s === "rect") mk("rect", {x:o.cx - o.w/2, y:o.cy - o.h/2, width:o.w, height:Math.max(o.h, 0.3), rx:o.type === "filter" ? 0.2 : 0.4, class:cls, transform:o.rot ? `rotate(${o.rot} ${o.cx} ${o.cy})` : ""}, g);
+      if (o.curve) { mk("polygon", {points: o.curve.map(q => q.join(",")).join(" "), class:cls, "stroke-linejoin":"round"}, g); (o.seams || []).forEach(l => mk("line", {x1:l[0][0], y1:l[0][1], x2:l[1][0], y2:l[1][1], class:"seam"}, g)); }
+      else if (s === "rect") mk("rect", {x:o.cx - o.w/2, y:o.cy - o.h/2, width:o.w, height:Math.max(o.h, 0.3), rx:o.type === "filter" ? 0.2 : 0.4, class:cls, transform:o.rot ? `rotate(${o.rot} ${o.cx} ${o.cy})` : ""}, g);
       else if (s === "circle") mk("circle", {cx:o.cx, cy:o.cy, r:o.w/2, class:cls}, g);
       else if (s === "stadium") { const r = Math.min(o.w, o.h)/2; mk("rect", {x:o.cx - o.w/2, y:o.cy - o.h/2, width:o.w, height:o.h, rx:r, ry:r, class:cls}, g); }
       else { const P = poly(o); mk("line", {x1:P[0][0], y1:P[0][1], x2:P[1][0], y2:P[1][1], class:"o-line"}, g); mk("line", {x1:P[0][0], y1:P[0][1], x2:P[1][0], y2:P[1][1], class:"hit"}, g); }
@@ -2563,7 +2608,7 @@ loadStories();
     const btn = (t, fn, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = cls || "btn small ghost"; b.textContent = t; b.addEventListener("click", fn); row.append(b); return b; };
     if (o.type === "line") btn("Turn line", () => { o.vertical = !o.vertical; if (o.vertical) o.cx = plan.yard.w/2; else o.cy = plan.yard.d/2; render(); });
     else if (o.type === "filter") { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = "Stays 3′ off the water's edge with its long side facing the pool. Drag it to slide it around the pool. On an oval pool it stays on one of the curved ends."; row.append(t); }
-    else if (o.type === "deck" && plan.items.some(x => x.type === "pool")) { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = "Sits right up against the pool with its long side running along the pool wall. Drag it to slide it around the pool."; row.append(t); }
+    else if (o.type === "deck" && plan.items.some(x => x.type === "pool")) { const t = document.createElement("p"); t.className = "muted small"; t.style.margin = "0 0 4px"; t.style.flexBasis = "100%"; t.textContent = deckKey(o) === CURVED ? "Two 5′ sections joined by an angled piece, so it follows the curve of the pool. Drag it to slide it around the pool. On an oval pool it only goes on the rounded ends." : "Sits right up against the pool with its long side running along the pool wall. Drag it to slide it around the pool."; row.append(t); }
     else if (o.w !== o.h) btn("Rotate 90°", () => { const t = o.w; o.w = o.h; o.h = t; render(); });
     btn("Measure to…", () => { measureFrom = o.id; render(); });
     btn("Copy", () => { const c = JSON.parse(JSON.stringify(o)); c.id = uid(); c.cx += 4; c.cy += 4; c.showDims = false; plan.items.push(c); selected = c.id; render(); });
