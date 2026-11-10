@@ -279,6 +279,30 @@ section:not(.band) .tile{background:var(--band)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hero-wm::before{filter:invert(1);opacity:.06}}
 :root[data-theme="dark"] .hero-wm::before{filter:invert(1);opacity:.06}
 
+/* pool journal */
+.jlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:980px;margin:0 auto}
+.jcard{display:flex;flex-direction:column;gap:8px;background:var(--band);border-radius:22px;padding:26px;color:var(--fg);min-width:0}
+.jcard:hover{text-decoration:none;background:color-mix(in srgb,var(--accent) 7%,var(--band))}
+.jcard .jmeta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.jchip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:980px;background:var(--bg);color:var(--accent)}
+.jcard h2{font-size:21px;line-height:1.25}
+.jcard p{color:var(--muted);font-size:15px}
+.jcard .more{margin-top:auto;padding-top:6px}
+.story{max-width:68ch;margin:0 auto}
+.story .jmeta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px;color:var(--muted)}
+.story h1{font-size:clamp(32px,5vw,48px);line-height:1.1;margin:14px 0 18px}
+.story h2{font-size:22px;margin:30px 0 8px}
+.story p{margin:0 0 14px;font-size:18px;line-height:1.6}
+.story ul{margin:0 0 16px;padding-left:22px;font-size:18px;line-height:1.6}
+.story .lead{font-size:21px;color:var(--muted)}
+.story .sources{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.story .sources ul{font-size:14px;margin-top:6px}
+.teaser{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 28px;max-width:980px;margin:0 auto;padding:26px 28px;border:1.5px solid var(--line);border-radius:22px}
+.teaser-text{min-width:0;flex:1 1 420px}
+.teaser-text .eyebrow{margin-bottom:6px}
+.teaser-text p{margin-top:6px}
+#journalTeaser{padding-block:0 72px}
+
 /* reservation form */
 .payterms{margin-top:24px;padding:24px;border-radius:18px;background:var(--band);display:grid;gap:10px}
 .payterms p{margin:0;color:var(--muted)}
@@ -454,6 +478,7 @@ footer a{color:var(--muted)}
           <a href="#book" data-link="book">Book</a>
           <a href="#about" data-link="about">About</a>
           <a href="#faq" data-link="faq">FAQ</a>
+          <a href="#journal" data-link="journal">Pool Journal</a>
           <a href="#contact" data-link="contact">Contact</a>
           <a href="#pricing" data-link="pricing" class="narrow-only">Pricing</a>
         </div>
@@ -536,6 +561,19 @@ footer a{color:var(--muted)}
         <div class="stat"><b>9</b><span>years in the pool industry</span></div>
         <div class="stat"><b>3</b><span>years as Brightside Pools</span></div>
         <div class="stat"><b>1</b><span>owner on every job</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="journalTeaser" hidden>
+    <div class="wrap">
+      <div class="teaser">
+        <div class="teaser-text">
+          <p class="eyebrow">From the Pool Journal</p>
+          <h2 class="h3" id="teaserTitle"></h2>
+          <p class="muted" id="teaserSummary"></p>
+        </div>
+        <a class="more" id="teaserLink" href="#journal">Read the story</a>
       </div>
     </div>
   </section>
@@ -1504,6 +1542,31 @@ footer a{color:var(--muted)}
   </section>
 </div>
 
+<!-- ============ POOL JOURNAL ============ -->
+<div data-page="journal" hidden>
+  <section class="center hero-wm">
+    <div class="wrap">
+      <p class="eyebrow">Pool Journal</p>
+      <h1 class="display">Pool talk, every week.</h1>
+      <p class="lede narrow">A new story every week on water chemistry, pool care, and what's happening in the pool industry, written for above ground pool owners.</p>
+    </div>
+  </section>
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="jlist" id="journalList"><p class="muted center" id="journalMsg">Loading stories…</p></div>
+    </div>
+  </section>
+</div>
+
+<div data-page="story" hidden>
+  <section style="padding-top:56px">
+    <div class="wrap">
+      <article class="story" id="storyBody"></article>
+      <div class="ctas" style="justify-content:flex-start;margin-top:40px"><a class="btn" href="#journal">More stories</a><a class="more" href="#book">Book a job with us</a></div>
+    </div>
+  </section>
+</div>
+
 <!-- ============ CONTACT ============ -->
 <div data-page="contact" hidden>
   <section class="center hero-wm">
@@ -1541,7 +1604,7 @@ footer a{color:var(--muted)}
 <footer>
   <div class="wrap">
     <span>© 2026 Brightside Pools · Licensed &amp; insured builder · Above ground pool installation &amp; service · Macomb County, MI</span>
-    <span><a href="#services">Services</a> · <a href="#book">Book</a> · <a href="#about">About</a> · <a href="#pricing">Pricing</a> · <a href="#faq">FAQ</a> · <a href="#contact">Contact</a> · <a href="#terms">Terms of Service</a></span>
+    <span><a href="#services">Services</a> · <a href="#book">Book</a> · <a href="#about">About</a> · <a href="#pricing">Pricing</a> · <a href="#journal">Pool Journal</a> · <a href="#faq">FAQ</a> · <a href="#contact">Contact</a> · <a href="#terms">Terms of Service</a></span>
   </div>
 </footer>
 
@@ -1551,20 +1614,23 @@ const DEPOSIT_URL = "https://buy.stripe.com/3cI8wQ4z7gas6GXdZSgrS00";
 // Paste a payment link here for the "Pay" button in the top menu (for example, a link to pay an invoice or balance).
 const PAY_URL = "";
 
-const pages = ["home","services","book","about","faq","contact","reserve","permit","sand","prep","pricing","terms"];
+const pages = ["home","services","book","about","faq","contact","reserve","permit","sand","prep","pricing","terms","journal","story"];
 function route(){
   const h = (location.hash || "").slice(1);
   const anchor = !pages.includes(h) && /^[a-z0-9-]+$/.test(h) ? document.getElementById(h) : null;
   const host = anchor ? anchor.closest("[data-page]") : null;
-  const page = pages.includes(h) ? h : host ? host.dataset.page : "home";
+  const storySlug = /^story-[a-z0-9-]+$/.test(h) ? h.slice(6) : null;
+  const page = storySlug ? "story" : pages.includes(h) ? h : host ? host.dataset.page : "home";
   document.querySelectorAll("[data-page]").forEach(el => { el.hidden = el.dataset.page !== page; });
   document.querySelectorAll("[data-link]").forEach(a => {
     if (a.dataset.link === page) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
   });
-  const titles = {home:"Brightside Pools",services:"Services · Brightside Pools",book:"Book · Brightside Pools",about:"About · Brightside Pools",contact:"Contact · Brightside Pools",faq:"FAQ · Brightside Pools",reserve:"Reserve · Brightside Pools",permit:"Pool Permits · Brightside Pools",sand:"Sand Table · Brightside Pools",prep:"Your Checklist · Brightside Pools",pricing:"Pricing · Brightside Pools",terms:"Terms · Brightside Pools"};
+  const titles = {home:"Brightside Pools",services:"Services · Brightside Pools",book:"Book · Brightside Pools",about:"About · Brightside Pools",contact:"Contact · Brightside Pools",faq:"FAQ · Brightside Pools",reserve:"Reserve · Brightside Pools",permit:"Pool Permits · Brightside Pools",sand:"Sand Table · Brightside Pools",prep:"Your Checklist · Brightside Pools",pricing:"Pricing · Brightside Pools",terms:"Terms · Brightside Pools",journal:"Pool Journal · Brightside Pools",story:"Pool Journal · Brightside Pools"};
   document.title = titles[page];
   if (page === "book") document.querySelectorAll('[data-link="book"]').forEach(a => a.setAttribute("aria-current","page"));
   if (page === "prep" && window.__prepReady) renderPrep();
+  if (page === "journal" || page === "story") loadStories().then(() => { if (page === "story") renderStory(storySlug); });
+  if (page === "story") document.querySelectorAll('[data-link="journal"]').forEach(a => a.setAttribute("aria-current","page"));
   if (anchor) anchor.scrollIntoView(); else window.scrollTo(0,0);
 }
 window.addEventListener("hashchange", route);
@@ -2066,6 +2132,63 @@ finishPaidReturn();
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !panel.hidden) { close(); btn.focus(); } });
   window.addEventListener("hashchange", close);
 })();
+
+// ---- Pool Journal (stories.json, a new story added weekly) ----
+var storiesCache = null;   // var: route() can run before this line on first load
+function loadStories(){
+  if (storiesCache) return Promise.resolve(storiesCache);
+  return fetch("stories.json", {cache: "no-store"}).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => { storiesCache = (d.stories || []).slice().sort((a,b) => (b.date||"").localeCompare(a.date||"")); renderJournal(); return storiesCache; })
+    .catch(() => { const m = document.getElementById("journalMsg"); if (m) m.textContent = "Stories couldn't load right now. Check back soon."; storiesCache = null; return []; });
+}
+const jDate = d => { const x = new Date((d || "") + "T12:00:00"); return isNaN(x) ? "" : x.toLocaleDateString("en-US", {month:"long", day:"numeric", year:"numeric"}); };
+function jMeta(st){
+  const m = document.createElement("div"); m.className = "jmeta";
+  const chip = document.createElement("span"); chip.className = "jchip"; chip.textContent = st.category || "Pool care";
+  m.append(chip, document.createTextNode(jDate(st.date) + (st.readMinutes ? " · " + st.readMinutes + " min read" : "")));
+  return m;
+}
+function renderJournal(){
+  const list = document.getElementById("journalList"); if (!list || !storiesCache) return;
+  list.textContent = "";
+  if (!storiesCache.length) { const p = document.createElement("p"); p.className = "muted center"; p.textContent = "The first story is on its way."; list.append(p); return; }
+  storiesCache.forEach(st => {
+    const a = document.createElement("a"); a.className = "jcard"; a.href = "#story-" + st.slug;
+    const h = document.createElement("h2"); h.textContent = st.title;
+    const p = document.createElement("p"); p.textContent = st.summary || "";
+    const more = document.createElement("span"); more.className = "more"; more.textContent = "Read the story";
+    a.append(jMeta(st), h, p, more); list.append(a);
+  });
+  const t = storiesCache[0];
+  document.getElementById("teaserTitle").textContent = t.title;
+  document.getElementById("teaserSummary").textContent = t.summary || "";
+  document.getElementById("teaserLink").href = "#story-" + t.slug;
+  document.getElementById("journalTeaser").hidden = false;
+}
+function renderStory(slug){
+  const box = document.getElementById("storyBody"); box.textContent = "";
+  const st = (storiesCache || []).find(x => x.slug === slug);
+  if (!st) { const p = document.createElement("p"); p.textContent = "We couldn't find that story."; box.append(p); return; }
+  document.title = st.title + " · Brightside Pools";
+  const h1 = document.createElement("h1"); h1.textContent = st.title;
+  const lead = document.createElement("p"); lead.className = "lead"; lead.textContent = st.summary || "";
+  box.append(jMeta(st), h1, lead);
+  let ul = null;
+  (st.body || []).forEach(line => {
+    line = String(line);
+    if (line.startsWith("- ")) { if (!ul) { ul = document.createElement("ul"); box.append(ul); } const li = document.createElement("li"); li.textContent = line.slice(2); ul.append(li); return; }
+    ul = null;
+    if (line.startsWith("## ")) { const h = document.createElement("h2"); h.textContent = line.slice(3); box.append(h); return; }
+    const p = document.createElement("p"); p.textContent = line; box.append(p);
+  });
+  if ((st.sources || []).length) {
+    const src = document.createElement("div"); src.className = "sources"; src.append("Sources");
+    const l = document.createElement("ul");
+    st.sources.forEach(s0 => { if (!/^https:\/\//.test(s0.url || "")) return; const li = document.createElement("li"); const a = document.createElement("a"); a.href = s0.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = s0.title || s0.url; li.append(a); l.append(li); });
+    src.append(l); box.append(src);
+  }
+}
+loadStories();
 </script>
 
 </body></html>

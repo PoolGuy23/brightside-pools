@@ -1,0 +1,38 @@
+{
+  "stories": [
+    {
+      "slug": "winter-water-chemistry",
+      "title": "Getting your pool water ready for a Michigan winter",
+      "date": "2026-11-09",
+      "category": "Water chemistry",
+      "readMinutes": 4,
+      "summary": "Cold water is harder on your liner and equipment than you'd think. Here's how to balance and shock your water before the cover goes on, so spring opening is easy.",
+      "body": [
+        "Most of the work of closing a pool happens out of sight: blowing out lines, cleaning the filter, putting on the cover. But the step that decides how your pool looks in April is the water chemistry you leave behind in November.",
+        "## Why balance matters in cold water",
+        "Water that sits all winter doesn't stay still chemically. Cold water can turn corrosive, and over months that can etch surfaces, stain the liner, and wear on metal parts. Balanced water protects your liner and equipment until spring.",
+        "## The numbers to aim for",
+        "Test your water about a week before your closing date and bring it into these ranges:",
+        "- pH: 7.2 to 7.8",
+        "- Total alkalinity: 80 to 120 ppm",
+        "- Calcium hardness: 100 to 250 ppm for a vinyl liner pool",
+        "- Stabilizer (CYA): under 100 ppm",
+        "Adjust one thing at a time. Alkalinity first, then pH, since alkalinity helps hold pH steady.",
+        "## Shock a few days before you close",
+        "Brush the walls and floor, vacuum, and then shock the pool a few days before closing. Give the chlorine time to come back down to a normal level, around 1 to 3 ppm, before you add winterizing chemicals. Going into winter with a chlorine residual keeps algae and bacteria from getting a head start.",
+        "It also helps to wait until the water has cooled, ideally below about 70°F. Algae grows much more slowly in cold water.",
+        "## A few safety rules",
+        "- Follow the directions on every chemical label for how much to add.",
+        "- Add chemicals to water one at a time, never mix them together.",
+        "- Wear gloves and eye protection when handling pool chemicals.",
+        "## Before we arrive for your closing",
+        "If Brightside Pools is closing your pool, drain the water roughly 2 to 4 inches below your skimmer and return, and have your pool cover ready. We'll add the closing chemicals, clean your filter system, and put the cover on.",
+        "Get the chemistry right now, and opening day next spring is usually a matter of taking the cover off, not fighting green water."
+      ],
+      "sources": [
+        { "title": "How to Close a Pool for Winter (SwimmingPool.com)", "url": "https://www.swimmingpool.com/maintenance/close-a-pool" },
+        { "title": "Off-season essentials: Physical and chemical winterization (Pool & Spa Marketing)", "url": "https://www.poolspamarketing.com/trade/features/off-season-essentials-physical-and-chemical-winterization/3/" }
+      ]
+    }
+  ]
+}
