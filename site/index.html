@@ -2311,7 +2311,7 @@ loadStories();
     house:  {label:"House", shape:"rect", w:40, h:28, cls:"o-house"},
     garage: {label:"Garage", shape:"rect", w:22, h:22, cls:"o-house"},
     shed:   {label:"Shed", shape:"rect", w:10, h:12, cls:"o-shed"},
-    deck:   {label:"Deck", shape:"rect", w:12, h:16, cls:"o-deck"},
+    deck:   {label:"Deck", shape:"rect", w:9, h:6, cls:"o-deck"},
     patio:  {label:"Patio", shape:"rect", w:14, h:12, cls:"o-patio"},
     tree:   {label:"Tree", shape:"circle", w:16, h:16, cls:"o-tree"},
     filter: {label:"Filter pad", shape:"rect", w:4, h:2, cls:"o-filter"},
@@ -2432,7 +2432,18 @@ loadStories();
       f.rot = Math.round((ang * 180 / Math.PI + 90) * 10) / 10;
     });
   }
+  // Decks come only in the sizes we sell: 6'x9', 6'x14' and 5.5'x13'.
+  const DECKS = [[6, 9], [6, 14], [5.5, 13]];
+  function deckKey(o){ const lo = Math.min(o.w, o.h), hi = Math.max(o.w, o.h); let best = 0, bd = 1e9; DECKS.forEach(([a, b], i) => { const d = Math.abs(a - lo) + Math.abs(b - hi); if (d < bd) { bd = d; best = i; } }); return best; }
+  function fixDecks(){
+    plan.items.forEach(o => {
+      if (o.type !== "deck") return;
+      const [a, b] = DECKS[deckKey(o)];
+      if (o.w >= o.h) { o.w = b; o.h = a; } else { o.w = a; o.h = b; }   // keep the way it's turned
+    });
+  }
   function render(){
+    fixDecks();
     orientFilters();
     const Y = plan.yard, pad = Math.max(Y.w, Y.d) * 0.08, fs = Math.max(Y.w, Y.d) / 42;
     plan.__fs = fs;
@@ -2504,6 +2515,12 @@ loadStories();
       field("Pool shape", shapeS); field("Pool size", sizeS);
     } else if (o.type === "tree") {
       field("Width of branches (feet)", num(o.w, v => { o.w = o.h = Math.max(1, v); }));
+    } else if (o.type === "deck") {
+      const dS = document.createElement("select");
+      DECKS.forEach(([a, b], i) => { const op = document.createElement("option"); op.value = i; op.textContent = a + "′ × " + b + "′ deck"; dS.append(op); });
+      dS.value = String(deckKey(o));
+      dS.addEventListener("change", () => { const [a, b] = DECKS[+dS.value]; if (o.w >= o.h) { o.w = b; o.h = a; } else { o.w = a; o.h = b; } render(); });
+      field("Deck size", dS);
     } else if (o.type === "filter") {
       const padS = document.createElement("select");
       [["2", "Filter only · 4′ × 2′"], ["4", "Filter and heater · 4′ × 4′"]].forEach(([v, t]) => { const op = document.createElement("option"); op.value = v; op.textContent = t; padS.append(op); });
