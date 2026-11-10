@@ -2464,7 +2464,7 @@ loadStories();
   }
   // The 5'x13.5' deck is two 5'x5' sections joined by an angled piece, so it follows the pool's curve.
   // It can go anywhere around a round pool, but only on the curved ends of an oval pool.
-  const CURVED = 2, SQ = 5, MID = 3.5;
+  const CURVED = 2, SQ = 5, MID = 0.75;   // the angled middle piece is 9" wide at the pool wall
   function curveDeck(o, pools){
     let best = null;
     pools.forEach(p => {
