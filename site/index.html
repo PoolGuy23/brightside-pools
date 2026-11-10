@@ -303,6 +303,75 @@ section:not(.band) .tile{background:var(--band)}
 .teaser-text p{margin-top:6px}
 #journalTeaser{padding-block:0 72px}
 
+/* yard planner */
+:root{--grass:#e3f1dc;--grassline:#c9e2bd;--edge:#4c6b3f;--bldg:#d7dbe0;--bldgline:#8a9099;--wood:#d8b98c;--woodline:#a07b4b;--stone:#d9d3c7;--leaf:#5fa34a;--warnc:#c46a00;--badc:#c62828;--meas:#7a3db8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--grass:#1b2a17;--grassline:#26391f;--edge:#8fbf7a;--bldg:#3a3f46;--bldgline:#9aa1ab;--wood:#6b5536;--woodline:#c49a63;--stone:#4a463f;--leaf:#4f8f3b;--warnc:#f0a040;--badc:#ff6b6b;--meas:#c79cf2}}
+:root[data-theme="dark"]{--grass:#1b2a17;--grassline:#26391f;--edge:#8fbf7a;--bldg:#3a3f46;--bldgline:#9aa1ab;--wood:#6b5536;--woodline:#c49a63;--stone:#4a463f;--leaf:#4f8f3b;--warnc:#f0a040;--badc:#ff6b6b;--meas:#c79cf2}
+.pltools{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:16px}
+.plyard{display:flex;flex-wrap:wrap;gap:12px}
+.pf{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;margin-top:10px}
+.pf.inline{flex-direction:row;align-items:center;gap:8px;margin:0;font-weight:500}
+.pf.inline span{font-weight:600}
+.pf input,.pf select{font:inherit;font-size:15px;font-weight:400;color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;min-width:0}
+.pf.inline input{width:80px}
+.pladd{display:flex;flex-wrap:wrap;gap:6px}
+.chipbtn{font:inherit;font-size:13px;font-weight:600;padding:6px 12px;border-radius:980px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+.chipbtn:hover{border-color:var(--accent);color:var(--accent)}
+.planner{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:860px){.planner{grid-template-columns:1fr}}
+.plcanvas{min-width:0}
+.plsvg{display:block;width:100%;height:auto;max-height:78vh;background:var(--band);border-radius:18px;touch-action:none;user-select:none;-webkit-user-select:none}
+.plside{background:var(--band);border-radius:18px;padding:18px;min-width:0}
+.plside .pf input,.plside .pf select{width:100%}
+.plbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.plbtns .btn.ghost{background:var(--bg);border:1px solid var(--line)}
+.btn.small.ghost.danger{color:var(--badc)}
+.linkbtn.danger{color:var(--badc)}
+.pcheck{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px}
+.pldist{list-style:none;margin:6px 0 0;padding:0;font-size:14px;display:grid;gap:4px;font-variant-numeric:tabular-nums}
+.plmeas{font-size:14px;margin-top:4px}
+.plactions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.plhint{margin:0 0 8px;padding:10px 14px;border-radius:12px;background:color-mix(in srgb,var(--meas) 14%,var(--bg));font-size:14px;font-weight:600}
+.plchecks{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;font-size:14px}
+.plchecks li{padding:9px 12px;border-radius:10px;border-left:4px solid var(--ok,#1f7a3f);background:var(--band)}
+.plchecks li.warn{border-left-color:var(--warnc)}
+.plchecks li.bad{border-left-color:var(--badc)}
+.plsvg .yard{fill:var(--grass)}
+.plsvg .grid line{stroke:var(--grassline);stroke-width:.12}
+.plsvg .yardedge{fill:none;stroke:var(--edge);stroke-width:.35;stroke-dasharray:1.2 .8}
+.plsvg .edgelabel{fill:var(--muted);font-family:var(--font)}
+.plsvg .obj{cursor:grab}
+.plsvg .obj:focus{outline:none}
+.plsvg .obj.pickable{cursor:crosshair}
+.plsvg .o-pool{fill:url(#water);stroke:var(--fg);stroke-width:.35}
+.plsvg .o-house{fill:var(--bldg);stroke:var(--bldgline);stroke-width:.3}
+.plsvg .o-shed{fill:var(--wood);stroke:var(--woodline);stroke-width:.3}
+.plsvg .o-deck{fill:var(--wood);stroke:var(--woodline);stroke-width:.3;opacity:.85}
+.plsvg .o-patio{fill:var(--stone);stroke:var(--bldgline);stroke-width:.25}
+.plsvg .o-tree{fill:var(--leaf);fill-opacity:.55;stroke:var(--leaf);stroke-width:.3}
+.plsvg .o-filter{fill:var(--fg);opacity:.75}
+.plsvg .o-fence{fill:var(--woodline)}
+.plsvg .o-other{fill:var(--bg);stroke:var(--muted);stroke-width:.3;stroke-dasharray:.8 .5}
+.plsvg .o-line{stroke:var(--badc);stroke-width:.35;stroke-dasharray:1.5 .8}
+.plsvg .hit{stroke:transparent;stroke-width:3}
+.plsvg .obj.sel > :first-child{stroke:var(--accent);stroke-width:.6}
+.plsvg .obj:focus-visible > :first-child{stroke:var(--accent);stroke-width:.6}
+.plsvg .objlabel{fill:var(--fg);font-family:var(--font);font-weight:600;pointer-events:none;paint-order:stroke;stroke:var(--bg);stroke-width:.25;stroke-opacity:.7}
+.plsvg .objlabel.line{fill:var(--badc)}
+.plsvg .dims{pointer-events:none}
+.plsvg .dim{stroke:var(--accent);stroke-width:.18}
+.plsvg .dimdot{fill:var(--accent)}
+.plsvg .dim.near{stroke:var(--warnc)} .plsvg .dimdot.near{fill:var(--warnc)}
+.plsvg .dim.meas{stroke:var(--meas)} .plsvg .dimdot.meas{fill:var(--meas)}
+.plsvg .dimtext{fill:var(--accent);font-family:var(--font);font-weight:700;paint-order:stroke;stroke:var(--grass);stroke-width:1;stroke-linejoin:round}
+.plsvg .dimtext.near{fill:var(--warnc)} .plsvg .dimtext.meas{fill:var(--meas)}
+@media print{
+  nav.top,footer,.plhero,.pltools,.plside,.plchecks,.plcanvas > p{display:none!important}
+  [data-page]:not([data-page="planner"]){display:none!important}
+  body::before{display:none}
+  .plsvg{max-height:none;background:#fff}
+}
+
 /* reservation form */
 .payterms{margin-top:24px;padding:24px;border-radius:18px;background:var(--band);display:grid;gap:10px}
 .payterms p{margin:0;color:var(--muted)}
@@ -478,6 +547,7 @@ footer a{color:var(--muted)}
           <a href="#book" data-link="book">Book</a>
           <a href="#about" data-link="about">About</a>
           <a href="#faq" data-link="faq">FAQ</a>
+          <a href="#planner" data-link="planner">Yard Planner</a>
           <a href="#journal" data-link="journal">Pool Journal</a>
           <a href="#contact" data-link="contact">Contact</a>
           <a href="#pricing" data-link="pricing" class="narrow-only">Pricing</a>
@@ -1256,7 +1326,7 @@ footer a{color:var(--muted)}
         <figcaption>Example sketch. Use your own yard's real measurements.</figcaption>
       </figure>
 
-      <div class="ctas" style="justify-content:flex-start"><a class="btn" href="#install-day">Back to install day</a><a class="more" href="#contact">Questions? Contact us</a></div>
+      <div class="ctas" style="justify-content:flex-start"><a class="btn" href="#planner">Sketch your yard in our Yard Planner</a><a class="more" href="#install-day">Back to install day</a><a class="more" href="#contact">Questions? Contact us</a></div>
     </div>
   </section>
 </div>
@@ -1567,6 +1637,46 @@ footer a{color:var(--muted)}
   </section>
 </div>
 
+<!-- ============ YARD PLANNER ============ -->
+<div data-page="planner" hidden>
+  <section class="center hero-wm plhero" style="padding-bottom:36px">
+    <div class="wrap">
+      <p class="eyebrow">Yard Planner</p>
+      <h1 class="display" style="font-size:clamp(36px,6vw,64px)">Plan your backyard.</h1>
+      <p class="lede narrow">Sketch your yard to scale, place your pool, and add trees, sheds, and anything else. Every distance is measured for you in feet and inches.</p>
+    </div>
+  </section>
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="pltools">
+        <div class="plyard">
+          <label class="pf inline"><span>Yard width</span><input id="plYardW" type="number" min="20" max="400" step="1" inputmode="numeric"> ft</label>
+          <label class="pf inline"><span>Yard depth</span><input id="plYardD" type="number" min="20" max="400" step="1" inputmode="numeric"> ft</label>
+        </div>
+        <div class="pladd" aria-label="Add to your yard"><button type="button" class="chipbtn" data-add="pool">+ Pool</button><button type="button" class="chipbtn" data-add="house">+ House</button><button type="button" class="chipbtn" data-add="garage">+ Garage</button><button type="button" class="chipbtn" data-add="shed">+ Shed</button><button type="button" class="chipbtn" data-add="deck">+ Deck</button><button type="button" class="chipbtn" data-add="patio">+ Patio</button><button type="button" class="chipbtn" data-add="tree">+ Tree</button><button type="button" class="chipbtn" data-add="filter">+ Filter pad</button><button type="button" class="chipbtn" data-add="line">+ Overhead line</button><button type="button" class="chipbtn" data-add="fence">+ Fence</button><button type="button" class="chipbtn" data-add="other">+ Other</button></div>
+      </div>
+      <div class="planner">
+        <div class="plcanvas">
+          <p class="plhint" id="plMeasureHint" role="status" hidden></p>
+          <svg id="plSvg" class="plsvg" role="application" aria-label="Your yard plan, drawn to scale. Drag objects to move them."></svg>
+          <p class="muted small" style="margin-top:8px">Drag anything to move it. Each grid square is 10 feet. Distances update as you go.</p>
+          <ul class="plchecks" id="plChecks" aria-live="polite"></ul>
+        </div>
+        <aside class="plside">
+          <div id="plInspector"></div>
+          <div class="plactions">
+            <button type="button" class="btn small" id="plCopy">Copy measurements</button>
+            <button type="button" class="btn small ghost" id="plDownload" hidden>Download picture</button>
+            <button type="button" class="btn small ghost" id="plPrint" hidden>Print</button>
+            <span id="plResetWrap"><button type="button" class="linkbtn danger" id="plReset">Start over</button></span>
+          </div>
+          <p class="muted small" style="margin-top:12px">Your plan is saved in this browser. A to-scale sketch like this one is what your city usually asks for with a <a href="#permit">pool permit</a>.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+</div>
+
 <!-- ============ CONTACT ============ -->
 <div data-page="contact" hidden>
   <section class="center hero-wm">
@@ -1604,7 +1714,7 @@ footer a{color:var(--muted)}
 <footer>
   <div class="wrap">
     <span>© 2026 Brightside Pools · Licensed &amp; insured builder · Above ground pool installation &amp; service · Macomb County, MI</span>
-    <span><a href="#services">Services</a> · <a href="#book">Book</a> · <a href="#about">About</a> · <a href="#pricing">Pricing</a> · <a href="#journal">Pool Journal</a> · <a href="#faq">FAQ</a> · <a href="#contact">Contact</a> · <a href="#terms">Terms of Service</a></span>
+    <span><a href="#services">Services</a> · <a href="#book">Book</a> · <a href="#about">About</a> · <a href="#pricing">Pricing</a> · <a href="#planner">Yard Planner</a> · <a href="#journal">Pool Journal</a> · <a href="#faq">FAQ</a> · <a href="#contact">Contact</a> · <a href="#terms">Terms of Service</a></span>
   </div>
 </footer>
 
@@ -1614,7 +1724,7 @@ const DEPOSIT_URL = "https://buy.stripe.com/3cI8wQ4z7gas6GXdZSgrS00";
 // Paste a payment link here for the "Pay" button in the top menu (for example, a link to pay an invoice or balance).
 const PAY_URL = "";
 
-const pages = ["home","services","book","about","faq","contact","reserve","permit","sand","prep","pricing","terms","journal","story"];
+const pages = ["home","services","book","about","faq","contact","reserve","permit","sand","prep","pricing","terms","journal","story","planner"];
 function route(){
   const h = (location.hash || "").slice(1);
   const anchor = !pages.includes(h) && /^[a-z0-9-]+$/.test(h) ? document.getElementById(h) : null;
@@ -1625,7 +1735,7 @@ function route(){
   document.querySelectorAll("[data-link]").forEach(a => {
     if (a.dataset.link === page) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
   });
-  const titles = {home:"Brightside Pools",services:"Services · Brightside Pools",book:"Book · Brightside Pools",about:"About · Brightside Pools",contact:"Contact · Brightside Pools",faq:"FAQ · Brightside Pools",reserve:"Reserve · Brightside Pools",permit:"Pool Permits · Brightside Pools",sand:"Sand Table · Brightside Pools",prep:"Your Checklist · Brightside Pools",pricing:"Pricing · Brightside Pools",terms:"Terms · Brightside Pools",journal:"Pool Journal · Brightside Pools",story:"Pool Journal · Brightside Pools"};
+  const titles = {home:"Brightside Pools",services:"Services · Brightside Pools",book:"Book · Brightside Pools",about:"About · Brightside Pools",contact:"Contact · Brightside Pools",faq:"FAQ · Brightside Pools",reserve:"Reserve · Brightside Pools",permit:"Pool Permits · Brightside Pools",sand:"Sand Table · Brightside Pools",prep:"Your Checklist · Brightside Pools",pricing:"Pricing · Brightside Pools",terms:"Terms · Brightside Pools",journal:"Pool Journal · Brightside Pools",planner:"Yard Planner · Brightside Pools",story:"Pool Journal · Brightside Pools"};
   document.title = titles[page];
   if (page === "book") document.querySelectorAll('[data-link="book"]').forEach(a => a.setAttribute("aria-current","page"));
   if (page === "prep" && window.__prepReady) renderPrep();
@@ -2189,6 +2299,323 @@ function renderStory(slug){
   }
 }
 loadStories();
+
+// ---- Yard Planner: a to-scale sketch of the customer's yard (1 SVG unit = 1 foot) ----
+(function(){
+  const $p = id => document.getElementById(id);
+  const svg = $p("plSvg"); if (!svg) return;
+  const NS = "http://www.w3.org/2000/svg";
+  const KEY = "bsp_yard_plan_v1";
+  const TYPES = {
+    pool:   {label:"Pool", shape:"pool"},
+    house:  {label:"House", shape:"rect", w:40, h:28, cls:"o-house"},
+    garage: {label:"Garage", shape:"rect", w:22, h:22, cls:"o-house"},
+    shed:   {label:"Shed", shape:"rect", w:10, h:12, cls:"o-shed"},
+    deck:   {label:"Deck", shape:"rect", w:12, h:16, cls:"o-deck"},
+    patio:  {label:"Patio", shape:"rect", w:14, h:12, cls:"o-patio"},
+    tree:   {label:"Tree", shape:"circle", w:16, h:16, cls:"o-tree"},
+    filter: {label:"Filter pad", shape:"rect", w:4, h:2, cls:"o-filter"},
+    line:   {label:"Overhead line", shape:"line", cls:"o-line"},
+    fence:  {label:"Fence", shape:"rect", w:30, h:0.5, cls:"o-fence"},
+    other:  {label:"Other", shape:"rect", w:8, h:8, cls:"o-other"}
+  };
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const snap = v => Math.round(v * 2) / 2;
+  const ftin = f => { const t = Math.max(0, Math.round(f * 12)); const ft = Math.floor(t / 12), inch = t % 12; return inch ? ft + "′ " + inch + "″" : ft + "′"; };
+  const LIVE = /(^|\.)netlify\.app$|(^|\.)brightsidepools\.com$/.test(location.hostname);
+
+  let plan = load() || starter();
+  let selected = null, measureFrom = null, drag = null;
+
+  function starter(){
+    return {yard:{w:80, d:110}, measures:[], items:[
+      {id:uid(), type:"house", label:"House", cx:40, cy:94, w:40, h:28},
+      {id:uid(), type:"pool", label:"Pool", cx:40, cy:42, w:24, h:24, pool:{shape:"Round", size:"24'"}, showDims:true},
+      {id:uid(), type:"tree", label:"Tree", cx:68, cy:16, w:16, h:16}
+    ]};
+  }
+  function load(){ try { const p = JSON.parse(localStorage.getItem(KEY) || "null"); return p && p.yard && Array.isArray(p.items) ? p : null; } catch (e) { return null; } }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(plan)); } catch (e) {} }
+  const byId = id => plan.items.find(o => o.id === id);
+
+  // ---------- geometry ----------
+  function poolDims(pool){
+    const s = String(pool.size || "24'").replace(/'/g, "");
+    if (pool.shape === "Oval") { const [a, b] = s.split("x").map(Number); return {w: b || 30, h: a || 15}; }
+    const d = Number(s) || 24; return {w: d, h: d};
+  }
+  function shapeOf(o){
+    if (o.type === "line") return "line";
+    if (o.type === "pool") return o.pool.shape === "Oval" ? "stadium" : "circle";
+    return TYPES[o.type].shape;
+  }
+  function poly(o){                       // outline points (feet) used for distances
+    const {cx, cy, w, h} = o, s = shapeOf(o), pts = [];
+    if (s === "rect") return [[cx-w/2, cy-h/2],[cx+w/2, cy-h/2],[cx+w/2, cy+h/2],[cx-w/2, cy+h/2]];
+    if (s === "circle") { const r = w/2; for (let i = 0; i < 72; i++) { const a = i/72*2*Math.PI; pts.push([cx + r*Math.cos(a), cy + r*Math.sin(a)]); } return pts; }
+    if (s === "stadium") {
+      const horiz = w >= h, r = (horiz ? h : w) / 2, half = (horiz ? w : h) / 2 - r;
+      // two half-circle ends joined by straight sides
+      const capA = horiz ? [cx + half, cy] : [cx, cy + half], capB = horiz ? [cx - half, cy] : [cx, cy - half];
+      const startA = horiz ? -Math.PI/2 : 0;
+      for (let i = 0; i <= 36; i++) { const a = startA + i/36*Math.PI; pts.push([capA[0] + r*Math.cos(a), capA[1] + r*Math.sin(a)]); }
+      for (let i = 0; i <= 36; i++) { const a = startA + Math.PI + i/36*Math.PI; pts.push([capB[0] + r*Math.cos(a), capB[1] + r*Math.sin(a)]); }
+      return pts;
+    }
+    // overhead line spans the yard
+    return o.vertical ? [[cx, 0],[cx, plan.yard.d]] : [[0, cy],[plan.yard.w, cy]];
+  }
+  function bbox(o){ const p = poly(o); const xs = p.map(q => q[0]), ys = p.map(q => q[1]); return {x0:Math.min(...xs), x1:Math.max(...xs), y0:Math.min(...ys), y1:Math.max(...ys)}; }
+  function segPt(p, a, b){ const dx = b[0]-a[0], dy = b[1]-a[1], L = dx*dx + dy*dy; let t = L ? ((p[0]-a[0])*dx + (p[1]-a[1])*dy) / L : 0; t = Math.max(0, Math.min(1, t)); const q = [a[0]+t*dx, a[1]+t*dy]; return {d: Math.hypot(p[0]-q[0], p[1]-q[1]), q}; }
+  function inside(p, P){ if (P.length < 3) return false; let c = false; for (let i = 0, j = P.length-1; i < P.length; j = i++) { const a = P[i], b = P[j]; if (((a[1] > p[1]) !== (b[1] > p[1])) && (p[0] < (b[0]-a[0]) * (p[1]-a[1]) / (b[1]-a[1]) + a[0])) c = !c; } return c; }
+  function edges(P){ return P.length === 2 ? [[P[0], P[1]]] : P.map((p, i) => [p, P[(i+1) % P.length]]); }
+  function cross(a, b, c, d){ const o = (p, q, r) => Math.sign((q[0]-p[0])*(r[1]-p[1]) - (q[1]-p[1])*(r[0]-p[0])); return o(a,b,c) !== o(a,b,d) && o(c,d,a) !== o(c,d,b); }
+  function gap(A, B){                     // clearance between two objects, and the two closest points
+    const P = poly(A), Q = poly(B);
+    if (P.some(p => inside(p, Q)) || Q.some(q => inside(q, P))) return {d:0, overlap:true};
+    for (const [a, b] of edges(P)) for (const [c, d] of edges(Q)) if (cross(a, b, c, d)) return {d:0, overlap:true};
+    let best = {d: Infinity};
+    for (const p of P) for (const [a, b] of edges(Q)) { const r = segPt(p, a, b); if (r.d < best.d) best = {d:r.d, p1:p, p2:r.q}; }
+    for (const q of Q) for (const [a, b] of edges(P)) { const r = segPt(q, a, b); if (r.d < best.d) best = {d:r.d, p1:r.q, p2:q}; }
+    return best;
+  }
+
+  // ---------- drawing ----------
+  const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; };
+  function dimLine(g, p1, p2, text, cls){
+    const fs = plan.__fs;
+    mk("line", {x1:p1[0], y1:p1[1], x2:p2[0], y2:p2[1], class:"dim " + (cls || "")}, g);
+    [p1, p2].forEach(p => mk("circle", {cx:p[0], cy:p[1], r:fs*0.18, class:"dimdot " + (cls || "")}, g));
+    const t = mk("text", {x:(p1[0]+p2[0])/2, y:(p1[1]+p2[1])/2, class:"dimtext " + (cls || ""), "font-size":fs*0.95, "text-anchor":"middle", "dominant-baseline":"middle"}, g);
+    t.textContent = text;
+  }
+  function propertyDims(g, o){
+    const b = bbox(o), Y = plan.yard, cy = (b.y0 + b.y1)/2, cx = (b.x0 + b.x1)/2;
+    if (o.type === "line") { if (o.vertical) { dimLine(g, [0, Y.d*0.12], [o.cx, Y.d*0.12], ftin(o.cx), "prop"); dimLine(g, [o.cx, Y.d*0.12], [Y.w, Y.d*0.12], ftin(Y.w - o.cx), "prop"); } else { dimLine(g, [Y.w*0.12, 0], [Y.w*0.12, o.cy], ftin(o.cy), "prop"); dimLine(g, [Y.w*0.12, o.cy], [Y.w*0.12, Y.d], ftin(Y.d - o.cy), "prop"); } return; }
+    if (b.x0 > 0.05) dimLine(g, [0, cy], [b.x0, cy], ftin(b.x0), "prop");
+    if (Y.w - b.x1 > 0.05) dimLine(g, [b.x1, cy], [Y.w, cy], ftin(Y.w - b.x1), "prop");
+    if (b.y0 > 0.05) dimLine(g, [cx, 0], [cx, b.y0], ftin(b.y0), "prop");
+    if (Y.d - b.y1 > 0.05) dimLine(g, [cx, b.y1], [cx, Y.d], ftin(Y.d - b.y1), "prop");
+  }
+  function render(){
+    const Y = plan.yard, pad = Math.max(Y.w, Y.d) * 0.08, fs = Math.max(Y.w, Y.d) / 42;
+    plan.__fs = fs;
+    svg.setAttribute("viewBox", `${-pad} ${-pad} ${Y.w + pad*2} ${Y.d + pad*2}`);
+    svg.textContent = "";
+    // yard, grid, edge labels
+    mk("rect", {x:0, y:0, width:Y.w, height:Y.d, class:"yard"}, svg);
+    const grid = mk("g", {class:"grid"}, svg);
+    for (let x = 10; x < Y.w; x += 10) mk("line", {x1:x, y1:0, x2:x, y2:Y.d}, grid);
+    for (let y = 10; y < Y.d; y += 10) mk("line", {x1:0, y1:y, x2:Y.w, y2:y}, grid);
+    mk("rect", {x:0, y:0, width:Y.w, height:Y.d, class:"yardedge"}, svg);
+    const lab = (x, y, t, rot) => { const e = mk("text", {x, y, class:"edgelabel", "font-size":fs*0.85, "text-anchor":"middle", "dominant-baseline":"middle", transform: rot ? `rotate(${rot} ${x} ${y})` : ""}, svg); e.textContent = t; };
+    lab(Y.w/2, -pad*0.45, "Back property line · " + ftin(Y.w));
+    lab(Y.w/2, Y.d + pad*0.45, "Front (street side) · " + ftin(Y.w));
+    lab(-pad*0.45, Y.d/2, "Left side · " + ftin(Y.d), -90);
+    lab(Y.w + pad*0.45, Y.d/2, "Right side · " + ftin(Y.d), 90);
+
+    // objects (overhead lines last so they sit on top)
+    const ordered = plan.items.slice().sort((a, b) => (a.type === "line") - (b.type === "line"));
+    ordered.forEach(o => {
+      const g = mk("g", {class:"obj" + (o.id === selected ? " sel" : "") + (measureFrom ? " pickable" : ""), "data-id":o.id, tabindex:"0", role:"button", "aria-label":o.label}, svg);
+      const s = shapeOf(o), cls = o.type === "pool" ? "o-pool" : (TYPES[o.type].cls || "o-other");
+      if (s === "rect") mk("rect", {x:o.cx - o.w/2, y:o.cy - o.h/2, width:o.w, height:Math.max(o.h, 0.3), rx:o.type === "filter" ? 0.2 : 0.4, class:cls}, g);
+      else if (s === "circle") mk("circle", {cx:o.cx, cy:o.cy, r:o.w/2, class:cls}, g);
+      else if (s === "stadium") { const r = Math.min(o.w, o.h)/2; mk("rect", {x:o.cx - o.w/2, y:o.cy - o.h/2, width:o.w, height:o.h, rx:r, ry:r, class:cls}, g); }
+      else { const P = poly(o); mk("line", {x1:P[0][0], y1:P[0][1], x2:P[1][0], y2:P[1][1], class:"o-line"}, g); mk("line", {x1:P[0][0], y1:P[0][1], x2:P[1][0], y2:P[1][1], class:"hit"}, g); }
+      if (o.type === "line") { const P = poly(o); const t = mk("text", {x:o.vertical ? o.cx + fs*0.6 : Y.w*0.5, y:o.vertical ? Y.d*0.5 : o.cy - fs*0.6, class:"objlabel line", "font-size":fs*0.8, "text-anchor":"middle", transform:o.vertical ? `rotate(-90 ${o.cx + fs*0.6} ${Y.d*0.5})` : ""}, g); t.textContent = o.label; }
+      else {
+        const small = Math.min(o.w, Math.max(o.h, 1)) < fs * 2.2;
+        const t = mk("text", {x:o.cx, y:small ? o.cy - Math.max(o.h, 0.3)/2 - fs*0.55 : o.cy, class:"objlabel" + (small ? " outside" : ""), "font-size":fs*(small ? 0.75 : 0.9), "text-anchor":"middle", "dominant-baseline":"middle"}, g);
+        t.textContent = o.type === "pool" ? o.label + " " + pretty(o.pool.size) : o.label;
+      }
+    });
+
+    // dimensions: pinned objects, the selected object, saved measurements
+    const dims = mk("g", {class:"dims"}, svg);
+    plan.items.forEach(o => { if (o.showDims || o.id === selected) propertyDims(dims, o); });
+    const sel = selected && byId(selected);
+    if (sel) {
+      let near = null;
+      plan.items.forEach(o => { if (o.id === sel.id) return; const r = gap(sel, o); if (!near || r.d < near.r.d) near = {o, r}; });
+      if (near && !near.r.overlap && isFinite(near.r.d)) dimLine(dims, near.r.p1, near.r.p2, ftin(near.r.d), "near");
+    }
+    plan.measures.forEach(m => { const a = byId(m.a), b = byId(m.b); if (!a || !b) return; const r = gap(a, b); if (!r.overlap) dimLine(dims, r.p1, r.p2, ftin(r.d), "meas"); });
+    renderSide(); renderChecks(); save();
+  }
+  const pretty = s => String(s || "").replace(/'/g, "′").replace("x", "×");
+
+  // ---------- side panel ----------
+  function renderSide(){
+    const box = $p("plInspector"), o = selected && byId(selected);
+    $p("plMeasureHint").hidden = !measureFrom;
+    if (measureFrom) $p("plMeasureHint").textContent = "Tap another object to measure from " + (byId(measureFrom) || {}).label + ".";
+    box.textContent = "";
+    if (!o) { const p = document.createElement("p"); p.className = "muted small"; p.textContent = "Tap an object on the plan to move it, resize it, or see its measurements."; box.append(p); return; }
+    const h = document.createElement("h3"); h.className = "h3"; h.style.fontSize = "18px"; h.textContent = o.label; box.append(h);
+    const field = (label, input) => { const l = document.createElement("label"); l.className = "pf"; const sp = document.createElement("span"); sp.textContent = label; l.append(sp, input); box.append(l); return input; };
+    const num = (val, onset, step) => { const i = document.createElement("input"); i.type = "number"; i.step = step || "0.5"; i.min = "0"; i.inputMode = "decimal"; i.value = String(val); i.addEventListener("change", () => { const v = Number(i.value); if (v >= 0) { onset(v); render(); } }); return i; };
+    const nameI = document.createElement("input"); nameI.value = o.label; nameI.maxLength = 30; nameI.addEventListener("change", () => { o.label = nameI.value.trim() || TYPES[o.type].label; render(); });
+    field("Name", nameI);
+    if (o.type === "pool") {
+      const shapeS = document.createElement("select"); ["Round","Oval"].forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = v; shapeS.append(op); }); shapeS.value = o.pool.shape;
+      const sizeS = document.createElement("select");
+      const fillSizes = () => { sizeS.textContent = ""; (o.pool.shape === "Oval" ? OVAL : ROUND).forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = pretty(v); sizeS.append(op); }); sizeS.value = o.pool.size; };
+      fillSizes();
+      const apply = () => { const d = poolDims(o.pool); const vert = o.h > o.w; o.w = vert ? d.h : d.w; o.h = vert ? d.w : d.h; };
+      shapeS.addEventListener("change", () => { o.pool.shape = shapeS.value; o.pool.size = (o.pool.shape === "Oval" ? OVAL : ROUND)[o.pool.shape === "Oval" ? 6 : 4]; apply(); render(); });
+      sizeS.addEventListener("change", () => { o.pool.size = sizeS.value; apply(); render(); });
+      field("Pool shape", shapeS); field("Pool size", sizeS);
+    } else if (o.type === "tree") {
+      field("Width of branches (feet)", num(o.w, v => { o.w = o.h = Math.max(1, v); }));
+    } else if (o.type !== "line") {
+      field("Width (feet)", num(o.w, v => { o.w = Math.max(0.5, v); }));
+      field("Length (feet)", num(o.h, v => { o.h = Math.max(0.5, v); }));
+    }
+    if (o.type === "line") {
+      field(o.vertical ? "Feet from left side" : "Feet from back line", num(o.vertical ? o.cx : o.cy, v => { if (o.vertical) o.cx = Math.min(v, plan.yard.w); else o.cy = Math.min(v, plan.yard.d); }));
+    } else {
+      const b = bbox(o);
+      field("Feet from left side", num(snap(b.x0), v => { o.cx += v - bbox(o).x0; }));
+      field("Feet from back line", num(snap(b.y0), v => { o.cy += v - bbox(o).y0; }));
+    }
+    const row = document.createElement("div"); row.className = "plbtns";
+    const btn = (t, fn, cls) => { const b = document.createElement("button"); b.type = "button"; b.className = cls || "btn small ghost"; b.textContent = t; b.addEventListener("click", fn); row.append(b); return b; };
+    if (o.type === "line") btn("Turn line", () => { o.vertical = !o.vertical; if (o.vertical) o.cx = plan.yard.w/2; else o.cy = plan.yard.d/2; render(); });
+    else if (o.w !== o.h) btn("Rotate 90°", () => { const t = o.w; o.w = o.h; o.h = t; render(); });
+    btn("Measure to…", () => { measureFrom = o.id; render(); });
+    btn("Copy", () => { const c = JSON.parse(JSON.stringify(o)); c.id = uid(); c.cx += 4; c.cy += 4; c.showDims = false; plan.items.push(c); selected = c.id; render(); });
+    btn("Delete", () => { plan.items = plan.items.filter(x => x.id !== o.id); plan.measures = plan.measures.filter(m => m.a !== o.id && m.b !== o.id); selected = null; render(); }, "btn small ghost danger");
+    box.append(row);
+    const pin = document.createElement("label"); pin.className = "pcheck";
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!o.showDims; cb.addEventListener("change", () => { o.showDims = cb.checked; render(); });
+    pin.append(cb, " Always show distances to the property lines"); box.append(pin);
+    // distances list
+    const list = document.createElement("ul"); list.className = "pldist";
+    plan.items.filter(x => x.id !== o.id).map(x => ({x, r: gap(o, x)})).sort((a, b) => a.r.d - b.r.d).forEach(({x, r}) => {
+      const li = document.createElement("li"); li.textContent = x.label + ": " + (r.overlap ? "overlapping" : ftin(r.d) + " away"); list.append(li);
+    });
+    if (list.childElementCount) { const hd = document.createElement("p"); hd.className = "muted small"; hd.style.marginTop = "12px"; hd.textContent = "Distance from " + o.label + " to:"; box.append(hd, list); }
+    const mine = plan.measures.filter(m => m.a === o.id || m.b === o.id);
+    if (mine.length) {
+      const hd = document.createElement("p"); hd.className = "muted small"; hd.style.marginTop = "12px"; hd.textContent = "Measurements shown on the plan:"; box.append(hd);
+      mine.forEach(m => { const other = byId(m.a === o.id ? m.b : m.a); if (!other) return; const r = gap(o, other);
+        const d = document.createElement("div"); d.className = "plmeas"; d.append(other.label + " · " + (r.overlap ? "overlapping" : ftin(r.d)) + " ");
+        const x = document.createElement("button"); x.type = "button"; x.className = "linkbtn"; x.textContent = "Remove"; x.addEventListener("click", () => { plan.measures = plan.measures.filter(q => q !== m); render(); }); d.append(x); box.append(d); });
+    }
+  }
+  function renderChecks(){
+    const out = [], pools = plan.items.filter(o => o.type === "pool"), Y = plan.yard;
+    pools.forEach(p => {
+      const b = bbox(p);
+      if (b.x0 < 0 || b.y0 < 0 || b.x1 > Y.w || b.y1 > Y.d) out.push(["bad", p.label + " goes past the property line."]);
+      plan.items.forEach(o => {
+        if (o.id === p.id) return; const r = gap(p, o);
+        if (o.type === "line" && r.d < 10) out.push(["bad", p.label + " is " + (r.overlap ? "under" : ftin(r.d) + " from") + " the " + o.label.toLowerCase() + ". Pools must be at least 10′ away from overhead lines."]);
+        else if (r.overlap && o.type !== "line") out.push(["bad", p.label + " overlaps the " + o.label.toLowerCase() + "."]);
+        else if (o.type === "tree" && r.d < 5) out.push(["warn", p.label + " is close to a tree (" + ftin(r.d) + "). Avoid big trees and roots; extra charges may apply if we hit stumps or roots."]);
+        else if (o.type === "filter" && Math.abs(r.d - 3) > 1) out.push(["warn", "Filter pad is " + ftin(r.d) + " from the " + p.label.toLowerCase() + ". Filters go 3′ off the water's edge" + (p.pool.shape === "Oval" ? ", on one of the curved ends." : ".")]);
+      });
+    });
+    if (!pools.length) out.push(["warn", "Add a pool to see how it fits."]);
+    if (!out.length) out.push(["ok", "Looks good. Remember, every city sets its own setbacks from property lines and buildings, so check with yours."]);
+    const ul = $p("plChecks"); ul.textContent = "";
+    out.forEach(([k, t]) => { const li = document.createElement("li"); li.className = k; li.textContent = t; ul.append(li); });
+  }
+
+  // ---------- adding objects ----------
+  document.querySelectorAll("[data-add]").forEach(b => b.addEventListener("click", () => {
+    const type = b.dataset.add, T = TYPES[type], Y = plan.yard;
+    const n = plan.items.filter(o => o.type === type).length + 1;
+    const o = {id:uid(), type, label: T.label + (n > 1 ? " " + n : ""), cx: snap(Y.w/2), cy: snap(Y.d/2), w: T.w || 1, h: T.h || 1};
+    if (type === "pool") { o.pool = {shape:"Round", size:"24'"}; const d = poolDims(o.pool); o.w = d.w; o.h = d.h; o.label = "Pool" + (n > 1 ? " " + n : ""); }
+    if (type === "line") { o.cy = snap(Y.d * 0.2); o.cx = snap(Y.w/2); o.w = 0; o.h = 0; }
+    plan.items.push(o); selected = o.id; measureFrom = null; render();
+  }));
+
+  // ---------- dragging and selecting ----------
+  function toFeet(ev){ const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY; const m = svg.getScreenCTM(); return m ? pt.matrixTransform(m.inverse()) : {x:0, y:0}; }
+  svg.addEventListener("pointerdown", ev => {
+    const g = ev.target.closest(".obj");
+    if (!g) { if (!measureFrom) { selected = null; render(); } return; }
+    const o = byId(g.dataset.id); if (!o) return;
+    if (measureFrom && measureFrom !== o.id) {
+      if (!plan.measures.some(m => (m.a === measureFrom && m.b === o.id) || (m.b === measureFrom && m.a === o.id))) plan.measures.push({a: measureFrom, b: o.id});
+      selected = measureFrom; measureFrom = null; render(); return;
+    }
+    selected = o.id; const p = toFeet(ev);
+    drag = {id: o.id, dx: p.x - o.cx, dy: p.y - o.cy, moved:false};
+    svg.setPointerCapture(ev.pointerId); ev.preventDefault(); render();
+  });
+  svg.addEventListener("pointermove", ev => {
+    if (!drag) return; const o = byId(drag.id); if (!o) return;
+    const p = toFeet(ev);
+    if (o.type === "line") { if (o.vertical) o.cx = Math.max(0, Math.min(plan.yard.w, snap(p.x))); else o.cy = Math.max(0, Math.min(plan.yard.d, snap(p.y))); }
+    else { o.cx = snap(p.x - drag.dx); o.cy = snap(p.y - drag.dy); }
+    drag.moved = true; render();
+  });
+  const endDrag = () => { drag = null; };
+  svg.addEventListener("pointerup", endDrag); svg.addEventListener("pointercancel", endDrag);
+  svg.addEventListener("keydown", ev => {
+    const g = ev.target.closest && ev.target.closest(".obj"); if (!g) return; const o = byId(g.dataset.id); if (!o) return;
+    const step = ev.shiftKey ? 5 : 0.5, mv = {ArrowLeft:[-step,0], ArrowRight:[step,0], ArrowUp:[0,-step], ArrowDown:[0,step]}[ev.key];
+    if (ev.key === "Enter" || ev.key === " ") { selected = o.id; render(); ev.preventDefault(); return; }
+    if (!mv) return; ev.preventDefault(); selected = o.id; o.cx += mv[0]; o.cy += mv[1]; render();
+    const again = svg.querySelector('.obj[data-id="' + o.id + '"]'); if (again) again.focus();
+  });
+
+  // ---------- yard size, reset, export ----------
+  $p("plYardW").value = plan.yard.w; $p("plYardD").value = plan.yard.d;
+  $p("plYardW").addEventListener("change", () => { const v = Number($p("plYardW").value); if (v >= 20 && v <= 400) { plan.yard.w = v; render(); } });
+  $p("plYardD").addEventListener("change", () => { const v = Number($p("plYardD").value); if (v >= 20 && v <= 400) { plan.yard.d = v; render(); } });
+  $p("plReset").addEventListener("click", () => {
+    const wrap = $p("plResetWrap"); wrap.textContent = "";
+    const yes = document.createElement("button"); yes.type = "button"; yes.className = "btn small"; yes.textContent = "Clear my plan";
+    const no = document.createElement("button"); no.type = "button"; no.className = "linkbtn"; no.textContent = "Keep it";
+    const back = () => { wrap.textContent = ""; wrap.append($p("plReset")); };
+    yes.addEventListener("click", () => { plan = starter(); selected = null; measureFrom = null; $p("plYardW").value = plan.yard.w; $p("plYardD").value = plan.yard.d; back(); render(); });
+    no.addEventListener("click", back);
+    const hold = document.createElement("span"); hold.hidden = true; hold.append($p("plReset"));
+    wrap.append("Start over? ", yes, " ", no, hold);
+  });
+  function summary(){
+    const Y = plan.yard, lines = ["Brightside Pools yard plan", "Yard: " + ftin(Y.w) + " wide × " + ftin(Y.d) + " deep", ""];
+    plan.items.forEach(o => {
+      if (o.type === "line") { lines.push(o.label + ": " + (o.vertical ? ftin(o.cx) + " from the left side" : ftin(o.cy) + " from the back property line")); return; }
+      const b = bbox(o);
+      lines.push((o.type === "pool" ? o.label + " (" + o.pool.shape.toLowerCase() + " " + o.pool.size + ")" : o.label + " (" + ftin(o.w) + (o.type === "tree" ? " wide" : " × " + ftin(o.h)) + ")") +
+        ": " + ftin(b.x0) + " from left, " + ftin(Y.w - b.x1) + " from right, " + ftin(b.y0) + " from back, " + ftin(Y.d - b.y1) + " from front");
+    });
+    const pools = plan.items.filter(o => o.type === "pool");
+    pools.forEach(p => plan.items.forEach(o => { if (o.id !== p.id) { const r = gap(p, o); lines.push(p.label + " to " + o.label + ": " + (r.overlap ? "overlapping" : ftin(r.d))); } }));
+    return lines.join("\n");
+  }
+  $p("plCopy").addEventListener("click", () => {
+    const b = $p("plCopy"), txt = summary();
+    const done = t => { b.textContent = t; setTimeout(() => b.textContent = "Copy measurements", 1800); };
+    try { navigator.clipboard.writeText(txt).then(() => done("Copied"), () => done("Couldn't copy")); } catch (e) { done("Couldn't copy"); }
+  });
+  // Download and print work on the live website.
+  if (LIVE) {
+    $p("plDownload").hidden = false; $p("plPrint").hidden = false;
+    $p("plPrint").addEventListener("click", () => window.print());
+    $p("plDownload").addEventListener("click", () => {
+      selected = null; measureFrom = null; render();
+      const clone = svg.cloneNode(true), live = svg.querySelectorAll("*"), cl = clone.querySelectorAll("*");
+      live.forEach((el, i) => { const cs = getComputedStyle(el); ["fill","stroke","stroke-width","stroke-dasharray","opacity","font-family","font-weight","paint-order"].forEach(p => cl[i].style.setProperty(p, cs.getPropertyValue(p))); });
+      const vb = svg.viewBox.baseVal, scale = 2400 / Math.max(vb.width, vb.height);
+      clone.setAttribute("width", vb.width * scale); clone.setAttribute("height", vb.height * scale); clone.setAttribute("xmlns", NS);
+      const img = new Image(), url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], {type:"image/svg+xml"}));
+      img.onload = () => {
+        const c = document.createElement("canvas"); c.width = vb.width * scale; c.height = vb.height * scale;
+        const ctx = c.getContext("2d"); ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0); URL.revokeObjectURL(url);
+        c.toBlob(bl => { const a = document.createElement("a"); a.href = URL.createObjectURL(bl); a.download = "brightside-yard-plan.png"; document.body.append(a); a.click(); a.remove(); });
+      };
+      img.src = url;
+    });
+  }
+  render();
+})();
 </script>
 
 </body></html>
