@@ -1192,6 +1192,13 @@ footer a{color:var(--muted)}
             <div class="pick"><input type="checkbox" name="raddon" id="radd-light" value="Light"><label for="radd-light"><b>Light</b><span>For evening swims</span></label></div>
             <div class="pick"><input type="checkbox" name="raddon" id="radd-sanitizer" value="Sanitizer system"><label for="radd-sanitizer"><b>Sanitizer system</b><span>Keeps water clean with less work</span></label></div>
             <div class="pick"><input type="checkbox" name="raddon" id="radd-foam" value="Wall foam"><label for="radd-foam"><b>Wall foam</b><span>Padding between the wall and liner</span></label></div>
+            <div class="pick"><input type="checkbox" name="raddon" id="radd-deep" value="Deep middle"><label for="radd-deep"><b>Excavated deep middle</b><span>Deeper center with a 3′ safety ledge</span></label></div>
+          </div>
+          <div class="cnote" id="deepBox" hidden style="margin-top:16px;text-align:left">
+            <label class="pf" for="r-deepdepth">How deep should the middle be?
+              <select id="r-deepdepth"><option value="6">6″ deep · $500</option><option value="7">7″ deep · $600</option><option value="8">8″ deep · $700</option><option value="9">9″ deep · $800</option><option value="10">10″ deep · $900</option><option value="11">11″ deep · $1,000</option><option value="12">12″ deep · $1,100</option><option value="13">13″ deep · $1,200</option><option value="14">14″ deep · $1,300</option><option value="15">15″ deep · $1,400</option><option value="16">16″ deep · $1,500</option><option value="17">17″ deep · $1,600</option><option value="18">18″ deep · $1,700</option><option value="19">19″ deep · $1,800</option><option value="20">20″ deep · $1,900</option><option value="21">21″ deep · $2,000</option><option value="22">22″ deep · $2,100</option><option value="23">23″ deep · $2,200</option><option value="24">24″ deep · $2,300</option></select>
+            </label>
+            <p style="margin:10px 0 0">Excavation starts at <strong>$500 for the first 6″</strong>. Each additional inch beyond 6″ is <strong>$100 per inch</strong>. The deep middle begins roughly 3′ in from the inside wall of the pool. <strong>You are responsible for the excavated dirt:</strong> arrange to have it hauled away, or set aside a spot in your yard where we can pile it.</p>
           </div>
         </div>
 
@@ -1790,6 +1797,11 @@ const LINER_PRICE = {
 };
 const DECK_PRICE = {"6'x9' deck":1000, "6'x14' deck":1200, "5'x13.5' deck":1300};
 const ADDON_PRICE = {"Center drain":350, "Heater":100, "Light":100, "Sanitizer system":100, "Wall foam":150};
+// Deep middle: $500 for the first 6", then $100 for each inch beyond 6".
+function deepInches(){ const e = document.getElementById("r-deepdepth"); return Math.max(6, Number(e && e.value) || 6); }
+function addonPrice(v){ return v === "Deep middle" ? 500 + (deepInches() - 6) * 100 : ADDON_PRICE[v]; }
+function addonLabel(v){ return v === "Deep middle" ? "Excavated deep middle (" + deepInches() + "″ deep)" : v; }
+function syncDeep(){ const b = document.getElementById("deepBox"); if (b) b.hidden = !document.getElementById("radd-deep").checked; }
 // "Big" pools pay $100 per inch of grade over 4"; small pools pay $75.
 const BIG = ["Round 24'","Round 27'","Round 28'","Round 30'","Round 33'","Oval 15'x30'","Oval 16'x28'","Oval 16'x32'","Oval 18'x33'","Oval 18'x40'"];
 const SMALL = ["Round 15'","Round 16'","Round 18'","Round 21'","Oval 12'x17'","Oval 12'x18'","Oval 12'x20'","Oval 12'x24'","Oval 15'x24'","Oval 15'x26'"];
@@ -1896,7 +1908,8 @@ function estimate(){
     const p = DECK_PRICE[deck];
     lines.push({label: deck.replace(/'/g,"′").replace("x","×"), amt: p}); if (p) total += p;
   }
-  if (!svc && !isLiner()) document.querySelectorAll('input[name="raddon"]:checked').forEach(c => { const p = ADDON_PRICE[c.value]; lines.push({label: c.value, amt: p}); if (p) total += p; });
+  if (!svc && !isLiner()) document.querySelectorAll('input[name="raddon"]:checked').forEach(c => { const p = addonPrice(c.value); lines.push({label: addonLabel(c.value), amt: p}); if (p) total += p; });
+  if (!svc && !isLiner() && $("radd-deep").checked) notes.push("Deep middle: you are responsible for the excavated dirt. Arrange to have it hauled away, or set aside a spot where we can pile it.");
   const r = gradeRate();
   if (!svc && !isLiner()) lines.push({label: "Grade", sub: "0″–4″ included" + (r ? "; $" + r + " per inch over 4″" : "; over 4″ charged per inch"), amt: 0, incl: true});
   if (!svc && !isLiner()) notes.push("Grade over 4″ is measured on site and added to your total.");
@@ -1941,7 +1954,7 @@ function renderEstimate(){
 function isInstall(){ return val("rjob").indexOf("installation") !== -1; }
 function isService(){ const j = val("rjob"); return j === "Pool opening" || j === "Pool closing"; }
 function details(){
-  const addons = [...document.querySelectorAll('input[name="raddon"]:checked')].map(c => c.value);
+  const addons = [...document.querySelectorAll('input[name="raddon"]:checked')].map(c => addonLabel(c.value));
   const svc = isService();
   return [
     ["Job", val("rjob")],
@@ -2014,6 +2027,7 @@ tabs.forEach((t,i) => t.addEventListener("click", () => goStep(i)));
 $("rNext").addEventListener("click", () => goStep(Math.min(step+1, REVIEW)));
 $("rBack").addEventListener("click", () => goStep(Math.max(step-1, 0), -1));
 document.querySelectorAll('input[name="rjob"]').forEach(r => r.addEventListener("change", () => goStep(step)));
+$("radd-deep").addEventListener("change", syncDeep);
 $("rForm").addEventListener("submit", e => e.preventDefault());
 $("r-payack").addEventListener("change", () => { if ($("r-payack").checked) $("payErr").hidden = true; });
 goStep(0);
@@ -2186,6 +2200,7 @@ function restoreForm(snap){
   Object.entries(snap || {}).forEach(([id, v]) => { const el = $(id); if (!el) return;
     if (el.type === "checkbox" || el.type === "radio") el.checked = !!v; else el.value = v; });
   syncShape();
+  syncDeep();
   const sz = (snap || {})["__size"]; if (sz) { const r = [...document.querySelectorAll('input[name="rsize"]')].find(x => x.value === sz); if (r) r.checked = true; }
   const exs = (snap || {})["__exsize"]; if (exs) { syncShape(); const r = [...document.querySelectorAll('input[name="rexsize"]')].find(x => x.value === exs); if (r) r.checked = true; }
 }
@@ -2196,7 +2211,7 @@ function bookingPayload(){
   return {
     bookingId: BOOKING_ID, job: val("rjob"), shape: shape(), size: val("rsize"),
     deck: val("rdeck") || "No deck", deckNotes: ($("r-decknotes") || {}).value || "",
-    addons: [...document.querySelectorAll('input[name="raddon"]:checked')].map(c => c.value).filter(() => install),
+    addons: [...document.querySelectorAll('input[name="raddon"]:checked')].map(c => addonLabel(c.value)).filter(() => install),
     existingPool: ex + (ex !== "No existing pool" ? " (" + val("rexshape").toLowerCase() + " " + val("rexsize") + ")" : ""),
     teardownShape: haul ? val("rexshape") : "", teardownSize: haul ? val("rexsize") : "",
     name: $("r-name").value.trim(), phone: $("r-phone").value.trim(), email: $("r-email").value.trim(),
