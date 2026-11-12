@@ -1,7 +1,7 @@
 // POST /api/stripe-webhook — Stripe calls this when a deposit is paid.
 // The payment's client_reference_id is the booking number, which links it to the booking held earlier.
 import crypto from "node:crypto";
-import { store, json, env, bookingToJob, localStamp } from "../../lib/common.mjs";
+import { store, json, env, bookingToJob, localStamp, notifyPhone } from "../../lib/common.mjs";
 
 function verify(raw, header, secret) {
   if (!header || !secret) return false;
@@ -43,6 +43,7 @@ export default async (req) => {
       status: "waiting", created: Date.now(), source: "website", detailsMissing: true, ...extra };
   }
   await db.setJSON(jobKey, job);
+  await notifyPhone(job, "New deposit paid ($" + Math.round((s.amount_total ?? 25000) / 100) + ")");
   return json({ ok: true });
 };
 

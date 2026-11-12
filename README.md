@@ -16,6 +16,7 @@
 | `ADMIN_PASSWORD` | The password you'll use to open the job list |
 | `TOKEN_SECRET` | Any long random text (keeps sign-ins secure) |
 | `STRIPE_WEBHOOK_SECRET` | The signing secret Stripe shows for the webhook (starts with `whsec_`) |
+| `NTFY_TOPIC` | Optional. The private topic name you subscribed to in the ntfy app, for phone alerts on new bookings |
 
 ## Stripe webhook
 

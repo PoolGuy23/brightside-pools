@@ -1,5 +1,5 @@
 // POST /api/service-request — pool openings and closings (no deposit) go straight onto the job list.
-import { store, json, cleanBooking, bookingToJob, localStamp, BOOKING_ID } from "../../lib/common.mjs";
+import { store, json, cleanBooking, bookingToJob, localStamp, BOOKING_ID, notifyPhone } from "../../lib/common.mjs";
 
 export default async (req) => {
   if (req.method !== "POST") return json({ error: "Use POST." }, 405);
@@ -12,7 +12,9 @@ export default async (req) => {
   if (b.job !== "Pool opening" && b.job !== "Pool closing") return json({ error: "Only openings and closings can be requested without a deposit." }, 400);
   const db = store(), key = "jobs/web-" + b.bookingId;
   if (await db.get(key, { type: "json" })) return json({ ok: true, duplicate: true });
-  await db.setJSON(key, bookingToJob(b, { received: localStamp(Date.now()), noDeposit: true }));
+  const job = bookingToJob(b, { received: localStamp(Date.now()), noDeposit: true });
+  await db.setJSON(key, job);
+  await notifyPhone(job, "New " + (b.job === "Pool opening" ? "opening" : "closing") + " request");
   return json({ ok: true });
 };
 
