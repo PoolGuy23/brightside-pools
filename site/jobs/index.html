@@ -332,6 +332,17 @@ details > summary.phead::-webkit-details-marker{display:none}
   </section>
 
   <!-- Time values -->
+  <!-- Openings and closings (no deposit, not on the install schedule) -->
+  <section class="panel" aria-labelledby="svcHead">
+    <div class="phead"><h2 id="svcHead">Openings &amp; closings</h2><span class="muted small" id="svcSub">Requests from the website, oldest first. These aren't on the install schedule.</span></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th class="num">#</th><th>Requested</th><th>Customer</th><th>Service</th><th>ZIP</th><th>Notes</th><th></th></tr></thead>
+        <tbody id="svcBody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <section class="panel" aria-labelledby="timesHead">
     <details id="timesWrap">
       <summary class="phead" style="cursor:pointer"><h2 id="timesHead" style="display:inline">Time values</h2> <span class="muted small">How many hours each part of a job takes. Change any value and the schedule updates.</span></summary>
@@ -501,8 +512,9 @@ details > summary.phead::-webkit-details-marker{display:none}
   }
 
   // ---------- render ----------
+  const isSvcJob = j => j.job === "Pool opening" || j.job === "Pool closing";
   function activeJobs(){
-    return jobs.filter(j => j.status !== "done").map(norm)
+    return jobs.filter(j => j.status !== "done" && !isSvcJob(j)).map(norm)
       .sort((a,b) => (a.received||"").localeCompare(b.received||"") || (a.created||0) - (b.created||0));
   }
   function render(){
@@ -603,6 +615,33 @@ details > summary.phead::-webkit-details-marker{display:none}
         el("td",{class:"num"}, inp, el("span",{class:"sub", text: breakdown})),
         el("td",null, sched, p && p.longDay ? el("span",{class:"sub", text:"Long day: kept to one day"}) : null, p && p.movedUp ? el("span",{class:"sub", text:"Moved up " + p.movedUp + (p.movedUp === 1 ? " spot" : " spots") + (p.dist != null ? " · ≈" + p.dist + " min drive" : "")}) : null),
         el("td",null, wk ? el("span",{class:"pill wk", text: wk === 1 ? "Within 1 week" : "About " + wk + " weeks"}) : "—"),
+        el("td",null, actions)));
+    });
+
+    // openings and closings
+    const svc = jobs.filter(j => j.status !== "done" && isSvcJob(j)).map(norm)
+      .sort((a,b) => (a.received||"").localeCompare(b.received||"") || (a.created||0) - (b.created||0));
+    const sb = $("svcBody"); sb.textContent = "";
+    const nOpen = svc.filter(j => j.job === "Pool opening").length;
+    $("svcSub").textContent = svc.length ? nOpen + (nOpen === 1 ? " opening" : " openings") + " · " + (svc.length - nOpen) + ((svc.length - nOpen) === 1 ? " closing" : " closings") + " waiting, oldest first. These aren't on the install schedule." : "Requests from the website, oldest first. These aren't on the install schedule.";
+    if (!svc.length) sb.append(el("tr",null, el("td",{colspan:"7"}, el("div",{class:"empty-state"}, el("b",{text: loaded ? "No opening or closing requests" : "Loading…"}), loaded ? "Requests customers send from the website show up here." : ""))));
+    svc.forEach((j, idx) => {
+      const actions = el("div",{class:"rowact"});
+      if (pendingDelete === j.id) {
+        actions.append(el("span",{class:"confirm"}, "Delete this request?",
+          el("button",{class:"linkbtn danger", type:"button", text:"Delete", onclick:() => { pendingDelete = null; write(jobsCol.doc(j.id).delete()); }}),
+          el("button",{class:"linkbtn", type:"button", text:"Keep", onclick:() => { pendingDelete = null; render(); }})));
+      } else {
+        actions.append(el("button",{class:"linkbtn", type:"button", text:"Mark done", onclick:() => write(jobsCol.doc(j.id).update({status:"done", doneAt: new Date().toISOString()}))}),
+                       el("button",{class:"linkbtn danger", type:"button", text:"Delete", onclick:() => { pendingDelete = j.id; render(); }}));
+      }
+      sb.append(el("tr",null,
+        el("td",{class:"num", text:String(idx+1)}),
+        el("td",null, fmtRecv(j.received)),
+        el("td",null, el("b",{text:j.name || "—"}), j.source === "website" ? " " : null, j.source === "website" ? el("span",{class:"pill web", text:"Website"}) : null, el("span",{class:"sub", text:[j.phone, j.email, j.address || j.where].filter(Boolean).join(" · ")})),
+        el("td",null, j.job === "Pool opening" ? "Opening" : "Closing", el("span",{class:"sub", text: j.size ? pretty(j.shape + " " + j.size) + " pool" : ""})),
+        el("td",null, j.zip ? [j.zip, el("span",{class:"sub", text: zipCity(j.zip)})] : "—"),
+        el("td",null, el("span",{class:"sub", style:"margin:0", text: j.notes || ""})),
         el("td",null, actions)));
     });
 
